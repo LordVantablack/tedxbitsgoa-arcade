@@ -1,0 +1,2 @@
+CREATE INDEX `personal_bests_leaderboard_idx` ON `personal_bests` (`game_id`,`score`,`achieved_at`);--> statement-breakpoint
+CREATE INDEX `run_tickets_player_issued_idx` ON `run_tickets` (`google_subject`,`issued_at`);

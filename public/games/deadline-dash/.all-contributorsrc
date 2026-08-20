@@ -1,0 +1,37 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "prathamVaidya",
+      "name": "Pratham Vaidya",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61202986?v=4",
+      "profile": "https://prathamvaidya.in",
+      "contributions": [
+        "maintenance",
+        "code"
+      ]
+    },
+    {
+      "login": "preetjdp",
+      "name": "Preet Parekh",
+      "avatar_url": "https://avatars.githubusercontent.com/u/27439197?v=4",
+      "profile": "https://preetjdp.dev/",
+      "contributions": [
+        "research",
+        "ideas"
+      ]
+    }
+   ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "t-rex-runner-game",
+  "projectOwner": "devfolioco"
+}
