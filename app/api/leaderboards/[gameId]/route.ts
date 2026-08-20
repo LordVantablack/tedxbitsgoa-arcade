@@ -15,7 +15,7 @@ export async function GET(
 
     const { results } = await getRuntimeEnv().DB
       .prepare(
-        `SELECT p.display_name AS displayName, pb.score AS score, pb.achieved_at AS achievedAt
+        `SELECT COALESCE(p.handle, p.display_name) AS displayName, pb.score AS score, pb.achieved_at AS achievedAt
          FROM personal_bests pb
          INNER JOIN players p ON p.google_subject = pb.google_subject
          WHERE pb.game_id = ?

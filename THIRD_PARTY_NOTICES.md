@@ -28,3 +28,9 @@ The full upstream MIT license is preserved in `public/games/maze-chase/LICENSE`.
 
 The arcade’s public artwork, audio, and branding must be independently owned or
 licensed. Do not treat upstream demo artwork or audio as cleared for TEDx use.
+
+## Raster Forge font
+
+Raster Forge is used throughout the arcade shell. It is supplied under CC0 1.0
+Universal / public-domain terms. The font and the complete supplied licence
+texts are preserved in `public/fonts/`.

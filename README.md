@@ -25,6 +25,14 @@ and fast; the source of truth for identities, runs, and scores is the server.
    for the current schema.
 4. Run `npm run dev`.
 
+### Docker local run
+
+Run `docker compose up --build`, then open `http://localhost:3000`. To test
+real Google login locally, create `.env.local` from `.env.example`, add the
+client ID and session secret, and add `http://localhost:3000` as an authorised
+JavaScript origin in that Google Web Client. Docker intentionally does not
+bypass the BITS Goa identity check.
+
 The Google button remains unavailable until `GOOGLE_CLIENT_ID` and
 `SESSION_SECRET` are supplied. That is deliberate: there is no development
 bypass for college identity.
@@ -48,6 +56,7 @@ bypass for college identity.
 - [Configuration and launch switch](docs/CONFIGURATION.md)
 - [Security and score integrity](docs/SECURITY-AND-SCORES.md)
 - [Game customisation, including sounds](docs/GAME-CUSTOMIZATION.md)
+- [Avatar studio and merch-shirt handoff](docs/AVATAR-STUDIO.md)
 - [Content and assets](docs/CONTENT-AND-ASSETS.md)
 - [Campaign operations](docs/OPERATIONS-RUNBOOK.md)
 - [Deployment](docs/DEPLOYMENT.md)
