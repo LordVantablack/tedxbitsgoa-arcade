@@ -26,6 +26,7 @@ Read this before changing the project.
 
 - `config/campaign.ts`: launch switch, campaign dates, form link, domain, leaderboard size
 - `config/games.ts`: game IDs, version, and embed route
+- `config/avatar.ts`: allowed player-card components and their stable IDs
 - `lib/auth.ts`: Google verification and sessions
 - `lib/score-validation.ts`: server acceptance rules
 - `app/api/runs/*`: ticket issue/finish protocol

@@ -3,19 +3,21 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("defines the TEDxBITSGoa arcade shell instead of the starter preview", async () => {
-  const [page, layout, client, gameConfig] = await Promise.all([
+  const [page, layout, client, landing, gameConfig] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ArcadeClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/LandingClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../config/games.ts", import.meta.url), "utf8"),
   ]);
   assert.match(layout, /title: "TEDxBITSGoa Arcade"/);
-  assert.match(page, /<ArcadeClient \/>/);
-  assert.match(client, /THE 10-DAY RECRUITMENT SIDE QUEST/);
+  assert.match(page, /<LandingClient \/>/);
+  assert.match(client, /ARCADE \/ SELECT A CABINET/);
   assert.match(gameConfig, /Deadline Dash/);
   assert.match(gameConfig, /Stage Stack/);
   assert.match(gameConfig, /Maze Chase/);
-  assert.doesNotMatch(page + layout + client, /SkeletonPreview|react-loading-skeleton|codex-preview/i);
+  assert.match(landing, /IDEAS/);
+  assert.doesNotMatch(page + layout + client + landing, /SkeletonPreview|react-loading-skeleton|codex-preview/i);
 });
 
 test("keeps the scoreable game sources and database migration in the shipped project", async () => {

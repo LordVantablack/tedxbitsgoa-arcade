@@ -1,5 +1,5 @@
-import { ArcadeClient } from "./ArcadeClient";
+import { LandingClient } from "./LandingClient";
 
 export default function Home() {
-  return <ArcadeClient />;
+  return <LandingClient />;
 }

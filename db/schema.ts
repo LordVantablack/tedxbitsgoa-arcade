@@ -1,13 +1,17 @@
-import { index, integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const players = sqliteTable("players", {
   googleSubject: text("google_subject").primaryKey(),
   email: text("email").notNull().unique(),
   displayName: text("display_name").notNull(),
   pictureUrl: text("picture_url"),
+  handle: text("handle"),
+  handleNormalized: text("handle_normalized"),
+  avatarId: text("avatar_id"),
+  avatarConfig: text("avatar_config"),
   createdAt: text("created_at").notNull(),
   lastSeenAt: text("last_seen_at").notNull(),
-});
+}, (table) => [uniqueIndex("players_handle_normalized_unique").on(table.handleNormalized)]);
 
 export const runTickets = sqliteTable(
   "run_tickets",

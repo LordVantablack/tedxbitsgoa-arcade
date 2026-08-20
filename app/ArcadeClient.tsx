@@ -1,10 +1,14 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
+import { CHAMPION_TEMPLATES, DEFAULT_AVATAR, championFor, type AvatarConfig } from "../config/avatar";
 import { GAMES, type GameDefinition, type GameId } from "../config/games";
+import { THEME } from "../config/theme";
 
-type Player = { email: string; displayName: string } | null;
+type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig } | null;
 type LeaderboardEntry = { displayName: string; score: number; achievedAt: string };
 type StartedRun = { runId: string; gameId: GameId; gameVersion: string; seed: string; startedAt: number };
 type GameMessage = {
@@ -36,6 +40,10 @@ export function ArcadeClient() {
   const [activeGame, setActiveGame] = useState<GameDefinition | null>(null);
   const [activeRun, setActiveRun] = useState<StartedRun | null>(null);
   const [leaderboards, setLeaderboards] = useState<Partial<Record<GameId, LeaderboardEntry[]>>>({});
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [handle, setHandle] = useState("");
+  const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
+  const [profileError, setProfileError] = useState("");
   const buttonRef = useRef<HTMLDivElement>(null);
 
   const loadLeaderboards = useCallback(async () => {
@@ -62,14 +70,27 @@ export function ArcadeClient() {
       setNotice(data.error ?? "We could not sign you in. Try your BITS Goa account again.");
       return;
     }
-    setPlayer(data.player);
-    setNotice(`You’re in, ${data.player.displayName.split(" ")[0]}. Your personal bests are now linked to this account.`);
+    const me = await fetch("/api/me", { cache: "no-store" }).then((result) => result.json()) as { player: Player };
+    setPlayer(me.player);
+    if (me.player) {
+      setHandle(me.player.handle ?? "");
+      setAvatar(me.player.avatar);
+    }
+    if (me.player && !me.player.handle) setProfileOpen(true);
+    setNotice(`You’re in, ${data.player.displayName.split(" ")[0]}. Pick a callsign before your first qualifying run.`);
   }, []);
 
   useEffect(() => {
     void fetch("/api/me", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { player: Player }) => setPlayer(data.player))
+      .then((data: { player: Player }) => {
+        setPlayer(data.player);
+        if (data.player) {
+          setHandle(data.player.handle ?? "");
+          setAvatar(data.player.avatar);
+          if (!data.player.handle) setProfileOpen(true);
+        }
+      })
       .catch(() => setNotice("Could not check your sign-in status. Refresh once and try again."))
       .finally(() => setLoadingIdentity(false));
     const leaderboardTimer = window.setTimeout(() => void loadLeaderboards(), 0);
@@ -154,6 +175,11 @@ export function ArcadeClient() {
       setNotice("Sign in with your BITS Goa Google account before starting a scoreable run.");
       return;
     }
+    if (!player.handle) {
+      setProfileOpen(true);
+      setNotice("Choose a callsign before starting a qualifying run.");
+      return;
+    }
     const response = await fetch("/api/runs/start", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -176,6 +202,30 @@ export function ArcadeClient() {
     setNotice(`${game.title} is live. Finish the run to send your score for verification.`);
   }
 
+  function launchDemo(game: GameDefinition) {
+    setActiveRun(null);
+    setActiveGame(game);
+    setNotice(`${game.title} demo mode — have a go. Sign in to submit a qualifying score.`);
+  }
+
+  async function saveProfile() {
+    const response = await fetch("/api/profile", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ handle, avatar }),
+    });
+    const data = (await response.json()) as { player?: NonNullable<Player>; error?: string };
+    if (!response.ok || !data.player) {
+      setProfileError(data.error ?? "Could not save your callsign.");
+      return;
+    }
+    setPlayer(data.player);
+    setProfileOpen(false);
+    setProfileError("");
+    setNotice(`Profile locked in. Welcome, ${data.player.handle}.`);
+  }
+
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
     setPlayer(null);
@@ -185,21 +235,20 @@ export function ArcadeClient() {
   }
 
   return (
-    <main className="arcade-shell">
-      <header className="arcade-header">
-        <a className="wordmark" href="#top" aria-label="TEDxBITSGoa Arcade home">
+    <main className="arcade-shell experience">
+      <div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}</div>
+      <header className="arcade-header site-nav">
+        <Link className="wordmark brand" href="/" aria-label="TEDxBITSGoa Arcade home">
           <span>TEDx</span>BITSGoa <em>ARCADE</em>
-        </a>
-        <div className="identity">
+        </Link>
+        <nav><a href="/arcade">ARCADE</a><a href={THEME.instagramUrl} target="_blank" rel="noreferrer">CHECK US OUT ↗</a></nav><div className="identity" id="login">
           {loadingIdentity ? <span className="quiet">Checking access…</span> : player ? (
-            <><span>{player.displayName}</span><button onClick={() => void logout()} className="text-button">Sign out</button></>
+            <><button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button><button onClick={() => void logout()} className="text-button">Sign out</button></>
           ) : <div ref={buttonRef} aria-label="Sign in with Google" />}
         </div>
       </header>
 
-      <section className="hero" id="top">
-        <p className="eyebrow">THE 10-DAY RECRUITMENT SIDE QUEST</p>
-        <h1>Play well. <i>Get noticed.</i></h1>
+      <section className="hero" id="top"><p className="eyebrow">ARCADE / SELECT A CABINET</p><h1>ONE MORE<br /><i>RUN.</i></h1>
         <p className="hero-copy">Three quick cabinets, one verified BITS Goa identity, and leaderboards that actually mean something.</p>
         <p className="status" role="status">{notice}</p>
       </section>
@@ -211,7 +260,7 @@ export function ArcadeClient() {
             <h2>{game.title}</h2>
             <p>{game.shortDescription}</p>
             <p className="control-hint">{game.controlHint}</p>
-            <button className="play-button" onClick={() => void launchGame(game)}>Play for score</button>
+            <div className="game-preview"><img src={game.previewImage} alt="" /></div><button className="play-button" onClick={() => void launchGame(game)}>Play for score</button><button className="demo-button" onClick={() => launchDemo(game)}>Try a demo</button>
             <Leaderboard entries={leaderboards[game.id] ?? []} label={game.scoreLabel} />
           </article>
         ))}
@@ -236,8 +285,23 @@ export function ArcadeClient() {
           />
         </div>
       ) : null}
+      {profileOpen ? <AvatarStudio handle={handle} avatar={avatar} error={profileError} onHandle={setHandle} onAvatar={setAvatar} onSave={() => void saveProfile()} /> : null}
     </main>
   );
+}
+
+export function AvatarStudio({ handle, avatar, error, onHandle, onAvatar, onSave }: { handle: string; avatar: AvatarConfig; error: string; onHandle: (value: string) => void; onAvatar: (value: AvatarConfig) => void; onSave: () => void }) {
+  const champion = championFor(avatar);
+  return <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Create your arcade profile"><div className="profile-modal avatar-studio"><section className="avatar-preview-panel"><p>PLAYER CARD / 01</p><AvatarPreview avatar={avatar} /><small>FULL-BODY TEDx FIT · TEMPLATE ART CAN BE REPLACED LATER</small></section><section className="avatar-controls"><p>PROFILE SETUP / CHOOSE YOUR CHAMPION</p><h2>BUILD YOUR<br /><em>PLAYER.</em></h2><label>PUBLIC CALLSIGN<input value={handle} maxLength={16} placeholder="e.g. stageleft" onChange={(event) => onHandle(event.target.value)} /></label><div className="champion-picker" aria-label="Champion template">{CHAMPION_TEMPLATES.map((template) => <button type="button" key={template.id} className={avatar.template === template.id ? "is-selected" : ""} onClick={() => onAvatar({ template: template.id })}><ChampionSprite champion={template} /><span>{template.name}</span></button>)}</div><section className="champion-lore"><p>{champion.name} <span>{champion.role}</span></p><blockquote>{champion.origin}</blockquote><strong>{champion.quirk}</strong><div className="champion-stats">{Object.entries(champion.stats).map(([stat, amount]) => <span key={stat}>{stat}<i>{"■".repeat(amount)}{"□".repeat(5 - amount)}</i></span>)}</div></section>{error ? <p className="profile-error">{error}</p> : null}<button className="big-button big-button--red" onClick={onSave}>LOCK IN PLAYER CARD <span>→</span></button><small>Your Google name stays private. This callsign appears on the board.</small></section></div></div>;
+}
+
+function AvatarPreview({ avatar }: { avatar: AvatarConfig }) {
+  const champion = championFor(avatar);
+  return <div className="champion-preview" aria-label={`${champion.name} full-body pixel avatar preview`}><ChampionSprite champion={champion} /><span className="pixel-avatar-scan" /><span className="champion-preview__tag">TEDx / {champion.name}</span></div>;
+}
+
+function ChampionSprite({ champion }: { champion: ReturnType<typeof championFor> }) {
+  return <span className="champion-sprite" style={{ backgroundPosition: champion.spritePosition }} aria-hidden="true" />;
 }
 
 function Leaderboard({ entries, label }: { entries: LeaderboardEntry[]; label: string }) {
