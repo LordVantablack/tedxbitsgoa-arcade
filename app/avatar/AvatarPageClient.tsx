@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AvatarStudio } from "../ArcadeClient";
 import { DEFAULT_AVATAR, type AvatarConfig } from "../../config/avatar";
-import { THEME } from "../../config/theme";
+import { SiteNav } from "../SiteNav";
 
 type Player = { email: string; displayName: string; handle: string | null; avatar: AvatarConfig } | null;
 
@@ -25,8 +25,8 @@ export function AvatarPageClient() {
     setPlayer(data.player); setError("");
   }
 
-  if (loading) return <main className="experience avatar-page-status">LOADING PLAYER CARD…</main>;
-  if (!player && !demoMode) return <main className="experience avatar-page-status"><div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline><source src={THEME.backgroundVideoSrc} /></video> : null}</div><p>YOUR PLAYER CARD IS LINKED TO YOUR BITS GOA ACCOUNT.</p><Link className="big-button big-button--red" href="/arcade#login">LOGIN TO CONTINUE <span>→</span></Link></main>;
-  if (demoMode && !player) return <main className="experience"><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => setError("Preview mode only — sign in to save your player card.")} /><Link className="avatar-back" href="/arcade">← BACK TO ARCADE</Link></main>;
-  return <main className="experience"><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => void save()} /><Link className="avatar-back" href="/arcade">← BACK TO ARCADE</Link></main>;
+  if (loading) return <main className="experience avatar-page-status"><SiteNav active="profile" /><section>LOADING PLAYER CARD…</section></main>;
+  if (!player && !demoMode) return <main className="experience avatar-page-status"><SiteNav active="profile" /><section><p>YOUR PLAYER CARD IS LINKED TO YOUR BITS GOA ACCOUNT.</p><Link className="big-button big-button--red" href="/arcade#login">LOGIN TO CONTINUE <span>→</span></Link></section></main>;
+  if (demoMode && !player) return <main className="experience avatar-page"><SiteNav active="profile" /><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => setError("Preview mode only — sign in to save your player card.")} /></main>;
+  return <main className="experience avatar-page"><SiteNav active="profile" /><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => void save()} /></main>;
 }
