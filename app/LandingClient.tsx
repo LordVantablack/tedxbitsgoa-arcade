@@ -4,6 +4,7 @@ import Link from "next/link";
 import { KeyboardEvent, useRef, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
 import { THEME } from "../config/theme";
+import { SiteNav } from "./SiteNav";
 
 export function LandingClient() {
   const [bgm, setBgm] = useState(38);
@@ -31,11 +32,7 @@ export function LandingClient() {
       <div className="ambient" aria-hidden="true">
         {THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}
       </div>
-      <header className="site-nav">
-        <Link href="/" className="brand"><b>TEDx</b>BITSGoa <i>ARCADE</i></Link>
-        <nav><Link href="/arcade">ARCADE</Link><a href={THEME.instagramUrl} target="_blank" rel="noreferrer">CHECK US OUT ↗</a></nav>
-        <Link className="nav-login" href="/arcade#login">LOGIN</Link>
-      </header>
+      <SiteNav active="home" />
       <section className="landing-hero landing-hero--arcade">
         <div className="hero-grid">
           <div className="hero-console">

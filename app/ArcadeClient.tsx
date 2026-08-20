@@ -1,12 +1,12 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
 import { CHAMPION_TEMPLATES, DEFAULT_AVATAR, championFor, type AvatarConfig } from "../config/avatar";
 import { GAMES, type GameDefinition, type GameId } from "../config/games";
 import { THEME } from "../config/theme";
+import { SiteNav } from "./SiteNav";
 
 type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig } | null;
 type LeaderboardEntry = { displayName: string; score: number; achievedAt: string };
@@ -237,16 +237,11 @@ export function ArcadeClient() {
   return (
     <main className="arcade-shell experience">
       <div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}</div>
-      <header className="arcade-header site-nav">
-        <Link className="wordmark brand" href="/" aria-label="TEDxBITSGoa Arcade home">
-          <span>TEDx</span>BITSGoa <em>ARCADE</em>
-        </Link>
-        <nav><a href="/arcade">ARCADE</a><a href={THEME.instagramUrl} target="_blank" rel="noreferrer">CHECK US OUT ↗</a></nav><div className="identity" id="login">
+      <SiteNav active="arcade" slot={<div className="identity" id="login">
           {loadingIdentity ? <span className="quiet">Checking access…</span> : player ? (
             <><button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button><button onClick={() => void logout()} className="text-button">Sign out</button></>
           ) : <div ref={buttonRef} aria-label="Sign in with Google" />}
-        </div>
-      </header>
+        </div>} />
 
       <section className="hero" id="top"><p className="eyebrow">ARCADE / SELECT A CABINET</p><h1>ONE MORE<br /><i>RUN.</i></h1>
         <p className="hero-copy">Three quick cabinets, one verified BITS Goa identity, and leaderboards that actually mean something.</p>
