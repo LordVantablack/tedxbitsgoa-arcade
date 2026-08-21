@@ -17,7 +17,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   "deadline-dash": {
     id: "deadline-dash",
     title: "Sober Parhawk",
-    shortDescription: "Tap to keep Parhawk flying through the B-Dome gates. B-Dome is the campus auditorium area; avoid the columns and survive as long as you can.",
+    shortDescription: "Tap to keep Parhawk flying through the D spine; avoid the columns and survive as long as you can.",
     version: "3.0.0",
     embedPath: "/games/deadline-dash/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/stage-flight-cover.svg",
