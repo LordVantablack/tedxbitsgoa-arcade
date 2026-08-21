@@ -53,6 +53,8 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(campaign, /enabled: true/);
   assert.match(campaign, /\^f2026\\d\{4\}@goa\\\.bits-pilani\\\.ac\\\.in\$/);
   assert.match(campaign, /leaderboardEligibleEmailGlob/);
+  assert.doesNotMatch(startRun, /isCampaignLive/);
+  assert.doesNotMatch(startRun, /campaign is not live/);
   assert.doesNotMatch(startRun, /isLeaderboardEligibleEmail\(user\.email\)/);
   assert.doesNotMatch(finishRun, /isLeaderboardEligibleEmail\(user\.email\)/);
   assert.match(leaderboardRoute, /SELECT p\.handle AS displayName/);

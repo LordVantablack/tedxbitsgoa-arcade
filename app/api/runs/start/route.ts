@@ -1,4 +1,3 @@
-import { isCampaignLive } from "../../../../config/campaign";
 import { GAMES, isGameId } from "../../../../config/games";
 import { requireSessionUser } from "../../../../lib/auth";
 import { createOpaqueId, createSeed } from "../../../../lib/ids";
@@ -14,7 +13,6 @@ const MAX_RUNS_PER_HOUR = 60;
 export async function POST(request: Request) {
   try {
     requireSameOrigin(request);
-    if (!isCampaignLive()) throw new ApiError(403, "The arcade campaign is not live right now.");
     const user = await requireSessionUser();
     const profile = await getRuntimeEnv().DB
       .prepare("SELECT handle FROM players WHERE google_subject = ?")
