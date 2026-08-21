@@ -2492,7 +2492,12 @@ function tryConsumeFruit() {
   playGameSfx("fruit");
 }
 
-function snapshotCollisionRect(source) {
+function getCollisionHitboxInset() {
+  if (!Number.isFinite(oneBlockSize) || oneBlockSize <= 0) return 0;
+  return isEmbeddedGame ? oneBlockSize * 0.24 : oneBlockSize * 0.12;
+}
+
+function snapshotCollisionRect(source, inset = 0) {
   if (!source) return null;
 
   const x = Number(source.x);
@@ -2511,7 +2516,13 @@ function snapshotCollisionRect(source) {
     return null;
   }
 
-  return { x, y, width, height };
+  const safeInset = Math.max(0, Math.min(Number(inset) || 0, width / 3, height / 3));
+  return {
+    x: x + safeInset,
+    y: y + safeInset,
+    width: width - safeInset * 2,
+    height: height - safeInset * 2,
+  };
 }
 
 function rectsOverlap(rectA, rectB) {
@@ -2535,9 +2546,10 @@ function getCollidingGhostIndices(options = {}) {
       ? utils.rectsOverlap
       : rectsOverlap;
   const canCheckSweptCollision =
-    utils && typeof utils.didRectsCollideDuringStep === "function";
-  const currentPacmanRect = snapshotCollisionRect(pacman);
-  const previousPacmanRect = snapshotCollisionRect(options.previousPacmanRect);
+    !isEmbeddedGame && utils && typeof utils.didRectsCollideDuringStep === "function";
+  const collisionInset = getCollisionHitboxInset();
+  const currentPacmanRect = snapshotCollisionRect(pacman, collisionInset);
+  const previousPacmanRect = snapshotCollisionRect(options.previousPacmanRect, collisionInset);
   const previousGhostRects = Array.isArray(options.previousGhostRects)
     ? options.previousGhostRects
     : [];
@@ -2549,14 +2561,14 @@ function getCollidingGhostIndices(options = {}) {
     if (!ghost) continue;
     if (ghost.isEaten()) continue;
 
-    const currentGhostRect = snapshotCollisionRect(ghost);
+    const currentGhostRect = snapshotCollisionRect(ghost, collisionInset);
     let collided = false;
 
     if (currentPacmanRect && currentGhostRect) {
       collided = overlapFn(currentPacmanRect, currentGhostRect);
     }
 
-    if (!collided && ghost.getMapX() === pacX && ghost.getMapY() === pacY) {
+    if (!collided && !isEmbeddedGame && ghost.getMapX() === pacX && ghost.getMapY() === pacY) {
       collided = true;
     }
 
@@ -2567,7 +2579,7 @@ function getCollidingGhostIndices(options = {}) {
       currentGhostRect &&
       previousPacmanRect
     ) {
-      const previousGhostRect = snapshotCollisionRect(previousGhostRects[i]);
+      const previousGhostRect = snapshotCollisionRect(previousGhostRects[i], collisionInset);
       if (previousGhostRect) {
         collided = utils.didRectsCollideDuringStep({
           previousRectA: previousPacmanRect,

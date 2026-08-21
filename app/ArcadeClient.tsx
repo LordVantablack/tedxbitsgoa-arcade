@@ -91,6 +91,9 @@ export function ArcadeClient() {
     const data = (await response.json()) as { improved?: boolean; personalBest?: { score: number }; error?: string };
     if (!response.ok) {
       setNotice(data.error ?? "That run could not be verified. Start a fresh run and try again.");
+      setActiveRun(null);
+      setActiveGame(null);
+      void loadLeaderboards();
       return;
     }
     setNotice(
@@ -101,6 +104,7 @@ export function ArcadeClient() {
         : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`,
     );
     setActiveRun(null);
+    setActiveGame(null);
     void loadLeaderboards();
   }, [activeRun, loadLeaderboards, player?.leaderboardEligible]);
 

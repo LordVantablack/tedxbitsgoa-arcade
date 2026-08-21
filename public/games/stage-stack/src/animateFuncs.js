@@ -73,7 +73,9 @@ export const endAnimate = (engine) => {
   })
   const { ctx } = engine
   const zoomedHeartWidth = engine.width * 0.085
-  drawPixelHeart(ctx, engine.width * 0.82, engine.width * 0.27, zoomedHeartWidth, failedCount >= 1)
+  for (let index = 0; index < 3; index += 1) {
+    drawPixelHeart(ctx, engine.width * (0.72 + index * 0.09), engine.width * 0.27, zoomedHeartWidth, failedCount > index)
+  }
 }
 
 export const startAnimate = (engine) => {
