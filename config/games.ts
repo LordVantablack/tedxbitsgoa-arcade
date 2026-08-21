@@ -28,7 +28,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
     id: "stage-stack",
     title: "B-Dome Stack",
     shortDescription: "Drop each moving block neatly onto the tower. Cleaner landings build better streaks; messy drops cost lives.",
-    version: "1.1.0",
+    version: "1.1.1",
     embedPath: "/games/stage-stack/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/stage-stack-cover.png",
     scoreLabel: "points",

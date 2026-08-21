@@ -23,6 +23,10 @@ type GameMessage = {
   metadata?: Record<string, unknown>;
   evidence?: unknown;
 };
+type GameRestartMessage = {
+  type: "tedx:restart-game";
+  gameId: GameId;
+};
 
 export function ArcadeClient() {
   const router = useRouter();
@@ -83,65 +87,7 @@ export function ArcadeClient() {
     return () => window.clearTimeout(leaderboardTimer);
   }, [loadLeaderboards, router]);
 
-  const finishRun = useCallback(async (message: GameMessage) => {
-    if (!activeRun || message.gameId !== activeRun.gameId) return;
-    const response = await fetch("/api/runs/finish", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({
-        runId: activeRun.runId,
-        gameId: activeRun.gameId,
-        gameVersion: activeRun.gameVersion,
-        score: Math.floor(message.score),
-        durationMs: Math.max(1_000, Math.floor(message.durationMs ?? Date.now() - activeRun.startedAt)),
-        metadata: message.metadata ?? {},
-        evidence: message.evidence ?? null,
-      }),
-    });
-    const data = (await response.json()) as { improved?: boolean; personalBest?: { score: number }; error?: string };
-    if (!response.ok) {
-      setNotice(data.error ?? "That run could not be verified. Start a fresh run and try again.");
-      setActiveRun(null);
-      setActiveGame(null);
-      void loadLeaderboards();
-      return;
-    }
-    setNotice(
-      data.improved
-        ? player?.leaderboardEligible
-          ? `New personal best: ${data.personalBest?.score ?? message.score}. It’s now on the provisional board.`
-          : `New personal best: ${data.personalBest?.score ?? message.score}. It’s saved privately to your account.`
-        : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`,
-    );
-    if (data.personalBest && Number.isSafeInteger(data.personalBest.score)) {
-      setViewerScores((current) => ({
-        ...current,
-        [activeRun.gameId]: {
-          score: data.personalBest?.score ?? Math.floor(message.score),
-          rank: current[activeRun.gameId]?.rank ?? null,
-          leaderboardEligible: player?.leaderboardEligible ?? false,
-        },
-      }));
-    }
-    setActiveRun(null);
-    setActiveGame(null);
-    void loadLeaderboards();
-  }, [activeRun, loadLeaderboards, player?.leaderboardEligible]);
-
-  useEffect(() => {
-    const receive = (event: MessageEvent<unknown>) => {
-      if (event.origin !== window.location.origin || !event.data || typeof event.data !== "object") return;
-      const message = event.data as Partial<GameMessage>;
-      if (message.type !== "tedx:game-over" || typeof message.gameId !== "string" || typeof message.score !== "number") return;
-      if (!(message.gameId in GAMES)) return;
-      void finishRun(message as GameMessage);
-    };
-    window.addEventListener("message", receive);
-    return () => window.removeEventListener("message", receive);
-  }, [finishRun]);
-
-  async function launchGame(game: GameDefinition) {
+  const launchGame = useCallback(async (game: GameDefinition) => {
     if (!player) {
       router.push("/signin?returnTo=/avatar");
       return;
@@ -171,7 +117,71 @@ export function ArcadeClient() {
     });
     setActiveGame(game);
     setNotice(`${game.title} is live. Finish the run to save your personal best.`);
-  }
+  }, [player, router]);
+
+  const finishRun = useCallback(async (message: GameMessage) => {
+    if (!activeRun || message.gameId !== activeRun.gameId) return;
+    const response = await fetch("/api/runs/finish", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        runId: activeRun.runId,
+        gameId: activeRun.gameId,
+        gameVersion: activeRun.gameVersion,
+        score: Math.floor(message.score),
+        durationMs: Math.max(1_000, Math.floor(message.durationMs ?? Date.now() - activeRun.startedAt)),
+        metadata: message.metadata ?? {},
+        evidence: message.evidence ?? null,
+      }),
+    });
+    const data = (await response.json()) as { improved?: boolean; personalBest?: { score: number }; error?: string };
+    if (!response.ok) {
+      setNotice(data.error ?? "That run could not be verified. Start a fresh run and try again.");
+      setActiveRun(null);
+      setActiveGame(null);
+      void loadLeaderboards();
+      return;
+    }
+    const resultNotice =
+      data.improved
+        ? player?.leaderboardEligible
+          ? `New personal best: ${data.personalBest?.score ?? message.score}. It’s now on the provisional board.`
+          : `New personal best: ${data.personalBest?.score ?? message.score}. It’s saved privately to your account.`
+        : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`;
+    setNotice(activeRun.gameId === "stage-stack" ? `${resultNotice} Hit Build again for a fresh verified run.` : resultNotice);
+    if (data.personalBest && Number.isSafeInteger(data.personalBest.score)) {
+      setViewerScores((current) => ({
+        ...current,
+        [activeRun.gameId]: {
+          score: data.personalBest?.score ?? Math.floor(message.score),
+          rank: current[activeRun.gameId]?.rank ?? null,
+          leaderboardEligible: player?.leaderboardEligible ?? false,
+        },
+      }));
+    }
+    if (activeRun.gameId !== "stage-stack") {
+      setActiveRun(null);
+      setActiveGame(null);
+    }
+    void loadLeaderboards();
+  }, [activeRun, loadLeaderboards, player?.leaderboardEligible]);
+
+  useEffect(() => {
+    const receive = (event: MessageEvent<unknown>) => {
+      if (event.origin !== window.location.origin || !event.data || typeof event.data !== "object") return;
+      const message = event.data as Partial<GameMessage | GameRestartMessage>;
+      if (message.type === "tedx:restart-game" && typeof message.gameId === "string" && message.gameId in GAMES) {
+        void launchGame(GAMES[message.gameId as GameId]);
+        return;
+      }
+      if (message.type !== "tedx:game-over" || typeof message.gameId !== "string" || typeof message.score !== "number") return;
+      if (!(message.gameId in GAMES)) return;
+      void finishRun(message as GameMessage);
+    };
+    window.addEventListener("message", receive);
+    return () => window.removeEventListener("message", receive);
+  }, [finishRun, launchGame]);
 
   async function saveProfile() {
     if (!handle.trim()) {
