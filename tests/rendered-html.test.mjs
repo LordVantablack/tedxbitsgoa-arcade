@@ -64,7 +64,12 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(leaderboardRoute, /leaderboardEligible = isLeaderboardEligibleEmail\(session\.email\)/);
   assert.match(leaderboardRoute, /rank: number \| null/);
   assert.doesNotMatch(leaderboardRoute, /COALESCE\(p\.handle, p\.display_name\)/);
-  assert.match(meRoute, /FROM personal_bests WHERE google_subject = \?/);
+  assert.match(finishRun, /const improved = !previousBest \|\| score > previousBest\.score/);
+  assert.match(finishRun, /UPDATE personal_bests[\s\S]*WHERE game_id = \? AND google_subject = \? AND score < \?/);
+  assert.doesNotMatch(finishRun, /ON CONFLICT\(game_id, google_subject\)/);
+  assert.match(finishRun, /ORDER BY score DESC, achieved_at ASC/);
+  assert.match(meRoute, /MAX\(score\) AS score/);
+  assert.match(leaderboardRoute, /WITH best_scores AS/);
   assert.match(meRoute, /scores:/);
   assert.match(client, /setViewerScores/);
   assert.match(profileRoute, /\{2,15\}/);

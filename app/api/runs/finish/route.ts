@@ -50,25 +50,45 @@ export async function POST(request: Request) {
       evidence: body.evidence,
     });
     const now = new Date().toISOString();
+    const previousBest = await db
+      .prepare(
+        `SELECT score, achieved_at AS achievedAt
+         FROM personal_bests
+         WHERE game_id = ? AND google_subject = ?
+         ORDER BY score DESC, achieved_at ASC
+         LIMIT 1`,
+      )
+      .bind(gameId, user.googleSubject)
+      .first<{ score: number; achievedAt: string }>();
+    const improved = !previousBest || score > previousBest.score;
 
-    const result = await db.batch([
-      db.prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'").bind(now, runId),
-      db
-        .prepare(
-          `INSERT INTO personal_bests (game_id, google_subject, score, achieved_at, run_ticket_id, game_version)
-           VALUES (?, ?, ?, ?, ?, ?)
-           ON CONFLICT(game_id, google_subject) DO UPDATE SET
-             score = excluded.score,
-             achieved_at = excluded.achieved_at,
-             run_ticket_id = excluded.run_ticket_id,
-             game_version = excluded.game_version
-           WHERE excluded.score > personal_bests.score`,
-        )
-        .bind(gameId, user.googleSubject, score, now, runId, gameVersion),
-    ]);
+    const result = await db.batch(
+      improved
+        ? [
+            db.prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'").bind(now, runId),
+            db
+              .prepare(
+                `UPDATE personal_bests
+                 SET score = ?, achieved_at = ?, run_ticket_id = ?, game_version = ?
+                 WHERE game_id = ? AND google_subject = ? AND score < ?`,
+              )
+              .bind(score, now, runId, gameVersion, gameId, user.googleSubject, score),
+            db
+              .prepare(
+                `INSERT INTO personal_bests (game_id, google_subject, score, achieved_at, run_ticket_id, game_version)
+                 SELECT ?, ?, ?, ?, ?, ?
+                 WHERE NOT EXISTS (
+                   SELECT 1 FROM personal_bests WHERE game_id = ? AND google_subject = ?
+                 )`,
+              )
+              .bind(gameId, user.googleSubject, score, now, runId, gameVersion, gameId, user.googleSubject),
+          ]
+        : [
+            db.prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'").bind(now, runId),
+          ],
+    );
     if ((result[0].meta.changes ?? 0) !== 1) throw new ApiError(409, "This run has already been submitted.");
 
-    const improved = (result[1].meta.changes ?? 0) === 1;
     if (improved && evidenceJson) {
       await db
         .prepare("INSERT INTO run_evidence (run_ticket_id, evidence_json, created_at) VALUES (?, ?, ?)")
@@ -77,11 +97,17 @@ export async function POST(request: Request) {
     }
 
     const personalBest = await db
-      .prepare("SELECT score, achieved_at AS achievedAt FROM personal_bests WHERE game_id = ? AND google_subject = ?")
+      .prepare(
+        `SELECT score, achieved_at AS achievedAt
+         FROM personal_bests
+         WHERE game_id = ? AND google_subject = ?
+         ORDER BY score DESC, achieved_at ASC
+         LIMIT 1`,
+      )
       .bind(gameId, user.googleSubject)
       .first<{ score: number; achievedAt: string }>();
 
-    return Response.json({ improved, personalBest, provisional: true });
+    return Response.json({ improved, previousBest, personalBest, provisional: true });
   } catch (error) {
     return jsonError(error);
   }

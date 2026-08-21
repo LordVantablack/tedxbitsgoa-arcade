@@ -15,8 +15,22 @@ export async function GET() {
     .bind(session.googleSubject)
     .first<{ handle: string | null; avatarId: string | null; avatarConfig: string | null }>();
   const { results: scores } = await getRuntimeEnv().DB
-    .prepare("SELECT game_id AS gameId, score, achieved_at AS achievedAt FROM personal_bests WHERE google_subject = ?")
-    .bind(session.googleSubject)
+    .prepare(
+      `WITH best_scores AS (
+         SELECT game_id AS gameId, MAX(score) AS score
+         FROM personal_bests
+         WHERE google_subject = ?
+         GROUP BY game_id
+       )
+       SELECT pb.game_id AS gameId, best_scores.score AS score, MIN(pb.achieved_at) AS achievedAt
+       FROM personal_bests pb
+       INNER JOIN best_scores
+         ON best_scores.gameId = pb.game_id
+        AND best_scores.score = pb.score
+       WHERE pb.google_subject = ?
+       GROUP BY pb.game_id, best_scores.score`,
+    )
+    .bind(session.googleSubject, session.googleSubject)
     .all<{ gameId: string; score: number; achievedAt: string }>();
 
   return Response.json({
