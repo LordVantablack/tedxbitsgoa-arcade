@@ -1,6 +1,7 @@
 import { getSessionUser } from "../../../lib/auth";
 import { getRuntimeEnv } from "../../../lib/runtime";
 import { normalizeAvatar } from "../../../config/avatar";
+import { isLeaderboardEligibleEmail } from "../../../config/campaign";
 
 export const runtime = "edge";
 
@@ -19,6 +20,7 @@ export async function GET() {
       handle: player?.handle ?? null,
       avatarId: player?.avatarId ?? null,
       avatar: parseAvatar(player?.avatarConfig),
+      leaderboardEligible: isLeaderboardEligibleEmail(session.email),
     },
   });
 }

@@ -13,7 +13,9 @@ Edit `config/campaign.ts` before launch:
 - set ISO-8601 `startsAt` and `endsAt` for the exact campaign window;
 - add the approved Google Form URL to `registrationUrl`;
 - leave `allowedGoogleWorkspaceDomain` as the exact BITS Goa Workspace domain
-  unless the organizers deliberately change eligibility.
+  unless the organizers deliberately change sign-in access;
+- keep `leaderboardEligibleEmailGlob` aligned with the server-side 2026-batch
+  rule if the eligible batch changes between campaigns.
 
 With the default `enabled: false`, scoreable runs are deliberately blocked. This
 prevents an unfinished or preview deployment from accumulating qualifying scores.

@@ -3,7 +3,7 @@
 ## In one sentence
 
 The browser runs the games, while the Worker and D1 database decide who is
-allowed to play for score and what appears on a leaderboard.
+allowed to play, save a personal best, and appear on a leaderboard.
 
 ```text
 Student browser
@@ -23,15 +23,18 @@ Student browser
 
 ## Scoreable run flow
 
-1. A student receives a verified session after Google sign-in.
-2. `POST /api/runs/start` creates a random one-time run ID, seed, game version,
+1. A student receives a verified session after Google sign-in, creates a
+   username of at most 16 characters, and chooses an avatar.
+2. Any verified BITS Goa Workspace account may request a scoreable run.
+3. `POST /api/runs/start` creates a random one-time run ID, seed, game version,
    issue time, and two-hour expiry.
-3. The student plays inside the matching game cabinet.
-4. On game over, the arcade shell sends score, duration, compact metadata, and
+4. The student plays inside the matching game cabinet.
+5. On game over, the arcade shell sends score, duration, compact metadata, and
    small evidence to `POST /api/runs/finish`.
-5. The Worker checks ownership, expiry, one-time use, game version, and simple
-   game-specific plausibility rules. It then updates the PB only if higher.
-6. A public leaderboard reads PB rows, never a browser cache.
+6. The Worker checks ownership, expiry, one-time use, game version, and simple
+   game-specific plausibility rules. It then updates the player's PB only if higher.
+7. A public leaderboard reads only eligible 2026-batch PB rows and saved
+   usernames, never a browser cache, email address, or Google display name.
 
 ## Why this stays fast
 
@@ -42,7 +45,8 @@ Student browser
 
 ## Database tables
 
-- `players`: Google `sub`, current verified email, display name, optional photo
+- `players`: Google `sub`, current verified email, display name, optional photo,
+  public username, and avatar choice
 - `run_tickets`: one-time scoreable play permission
 - `personal_bests`: exactly one row per student per game
 - `run_evidence`: compact PB evidence, useful for a finalist review

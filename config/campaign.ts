@@ -7,7 +7,14 @@ export const CAMPAIGN = {
   endsAt: null as string | null,
   leaderboardSize: 10,
   allowedGoogleWorkspaceDomain: "goa.bits-pilani.ac.in",
+  leaderboardEligibleEmailGlob: "f2026[0-9][0-9][0-9][0-9]@goa.bits-pilani.ac.in",
 } as const;
+
+const LEADERBOARD_ELIGIBLE_EMAIL = /^f2026\d{4}@goa\.bits-pilani\.ac\.in$/;
+
+export function isLeaderboardEligibleEmail(email: string): boolean {
+  return LEADERBOARD_ELIGIBLE_EMAIL.test(email.trim().toLowerCase());
+}
 
 export function isCampaignLive(now = new Date()): boolean {
   if (!CAMPAIGN.enabled) return false;

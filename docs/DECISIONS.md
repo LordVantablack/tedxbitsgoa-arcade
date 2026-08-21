@@ -11,6 +11,12 @@ checking an email suffix and avoids collecting passwords.
 Each player has one best score per game. It keeps the database small, avoids a
 history dashboard, and makes the leaderboard easy to explain.
 
+Any verified BITS Goa Workspace account may create a profile, play games, and
+save personal bests. Only verified `f2026XXXX@goa.bits-pilani.ac.in` accounts
+may appear on a board. The public label is the player’s unique,
+organiser-approved username of at most 16 characters, never their email or
+Google display name.
+
 ## 003 — Tickets plus manual finalist review
 
 One-time tickets and plausibility checks deter trivial tampering. Finalist

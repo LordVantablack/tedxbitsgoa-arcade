@@ -2,16 +2,17 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
 import { CHAMPION_TEMPLATES, DEFAULT_AVATAR, championFor, type AvatarConfig } from "../config/avatar";
 import { GAMES, type GameDefinition, type GameId } from "../config/games";
 import { THEME } from "../config/theme";
 import { SiteNav } from "./SiteNav";
 
-type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig } | null;
+type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig; leaderboardEligible: boolean } | null;
 type LeaderboardEntry = { displayName: string; score: number; achievedAt: string };
-type ViewerScore = { score: number; rank: number } | null;
+type ViewerScore = { score: number; rank: number | null; leaderboardEligible: boolean } | null;
 type StartedRun = { runId: string; gameId: GameId; gameVersion: string; seed: string; startedAt: number };
 type GameMessage = {
   type: "tedx:game-over";
@@ -22,20 +23,8 @@ type GameMessage = {
   evidence?: unknown;
 };
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize(config: { client_id: string; callback: (response: { credential: string }) => void; hosted_domain?: string }): void;
-          prompt(): void;
-        };
-      };
-    };
-  }
-}
-
 export function ArcadeClient() {
+  const router = useRouter();
   const [player, setPlayer] = useState<Player>(null);
   const [loadingIdentity, setLoadingIdentity] = useState(true);
   const [notice, setNotice] = useState("Sign in, pick a cabinet, and make your PB count.");
@@ -46,6 +35,7 @@ export function ArcadeClient() {
   const [handle, setHandle] = useState("");
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [profileError, setProfileError] = useState("");
+  const gameFrameRef = useRef<HTMLIFrameElement>(null);
 
   const loadLeaderboards = useCallback(async () => {
     const loaded = await Promise.all(
@@ -59,29 +49,6 @@ export function ArcadeClient() {
     setViewerScores(Object.fromEntries(loaded.map(([gameId, data]) => [gameId, data.viewer ?? null])) as Partial<Record<GameId, ViewerScore>>);
   }, []);
 
-  const onCredential = useCallback(async (credential: string) => {
-    const response = await fetch("/api/auth/google", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ credential }),
-    });
-    const data = (await response.json()) as { player?: Player; error?: string };
-    if (!response.ok || !data.player) {
-      setNotice(data.error ?? "We could not sign you in. Try your BITS Goa account again.");
-      return;
-    }
-    const me = await fetch("/api/me", { cache: "no-store" }).then((result) => result.json()) as { player: Player };
-    setPlayer(me.player);
-    if (me.player) {
-      setHandle(me.player.handle ?? "");
-      setAvatar(me.player.avatar);
-    }
-    if (me.player && !me.player.handle) setProfileOpen(true);
-    setNotice(`You’re in, ${data.player.displayName.split(" ")[0]}. Pick a callsign before your first qualifying run.`);
-    void loadLeaderboards();
-  }, [loadLeaderboards]);
-
   useEffect(() => {
     void fetch("/api/me", { cache: "no-store" })
       .then((response) => response.json())
@@ -90,41 +57,20 @@ export function ArcadeClient() {
         if (data.player) {
           setHandle(data.player.handle ?? "");
           setAvatar(data.player.avatar);
-          if (!data.player.handle) setProfileOpen(true);
+          if (!data.player.handle) {
+            router.replace("/avatar");
+          } else if (data.player.leaderboardEligible) {
+            setNotice("You’re signed in and eligible for the public leaderboard.");
+          } else {
+            setNotice("You’re signed in. Your PBs are saved privately, but only f2026XXXX accounts appear on the leaderboard.");
+          }
         }
       })
       .catch(() => setNotice("Could not check your sign-in status. Refresh once and try again."))
       .finally(() => setLoadingIdentity(false));
     const leaderboardTimer = window.setTimeout(() => void loadLeaderboards(), 0);
     return () => window.clearTimeout(leaderboardTimer);
-  }, [loadLeaderboards]);
-
-  useEffect(() => {
-    if (player) return;
-    let disposed = false;
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = async () => {
-      const response = await fetch("/api/auth/config", { cache: "no-store" });
-      const { googleClientId } = (await response.json()) as { googleClientId: string | null };
-      if (disposed || !googleClientId || !window.google) return;
-      window.google.accounts.id.initialize({
-        client_id: googleClientId,
-        hosted_domain: CAMPAIGN.allowedGoogleWorkspaceDomain,
-        callback: ({ credential }) => void onCredential(credential),
-      });
-      if (new URLSearchParams(window.location.search).get("setup") === "profile") {
-        window.google.accounts.id.prompt();
-      }
-    };
-    document.head.appendChild(script);
-    return () => {
-      disposed = true;
-      script.remove();
-    };
-  }, [onCredential, player]);
+  }, [loadLeaderboards, router]);
 
   const finishRun = useCallback(async (message: GameMessage) => {
     if (!activeRun || message.gameId !== activeRun.gameId) return;
@@ -149,12 +95,14 @@ export function ArcadeClient() {
     }
     setNotice(
       data.improved
-        ? `New personal best: ${data.personalBest?.score ?? message.score}. It’s now on the provisional board.`
+        ? player?.leaderboardEligible
+          ? `New personal best: ${data.personalBest?.score ?? message.score}. It’s now on the provisional board.`
+          : `New personal best: ${data.personalBest?.score ?? message.score}. It’s saved privately to your account.`
         : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`,
     );
     setActiveRun(null);
     void loadLeaderboards();
-  }, [activeRun, loadLeaderboards]);
+  }, [activeRun, loadLeaderboards, player?.leaderboardEligible]);
 
   useEffect(() => {
     const receive = (event: MessageEvent<unknown>) => {
@@ -170,12 +118,11 @@ export function ArcadeClient() {
 
   async function launchGame(game: GameDefinition) {
     if (!player) {
-      setNotice("Sign in with your BITS Goa Google account before starting a scoreable run.");
+      router.push("/signin?returnTo=/avatar");
       return;
     }
     if (!player.handle) {
-      setProfileOpen(true);
-      setNotice("Choose a callsign before starting a qualifying run.");
+      router.push("/avatar");
       return;
     }
     const response = await fetch("/api/runs/start", {
@@ -197,7 +144,7 @@ export function ArcadeClient() {
       startedAt: new Date(data.issuedAt).getTime(),
     });
     setActiveGame(game);
-    setNotice(`${game.title} is live. Finish the run to send your score for verification.`);
+    setNotice(`${game.title} is live. Finish the run to save your personal best.`);
   }
 
   async function saveProfile() {
@@ -209,7 +156,7 @@ export function ArcadeClient() {
     });
     const data = (await response.json()) as { player?: NonNullable<Player>; error?: string };
     if (!response.ok || !data.player) {
-      setProfileError(data.error ?? "Could not save your callsign.");
+      setProfileError(data.error ?? "Could not save your username.");
       return;
     }
     setPlayer(data.player);
@@ -226,17 +173,13 @@ export function ArcadeClient() {
     setNotice("Signed out. Your verified scores remain safely attached to your account.");
   }
 
-  function openGoogleSignIn() {
-    if (!window.google) {
-      setNotice("Sign-in is still loading. Please try again in a moment.");
-      return;
-    }
-    window.google.accounts.id.prompt();
-  }
-
   function requestScoreRun(game: GameDefinition) {
     if (!player) {
-      openGoogleSignIn();
+      router.push("/signin?returnTo=/avatar");
+      return;
+    }
+    if (!player.handle) {
+      router.push("/avatar");
       return;
     }
     void launchGame(game);
@@ -248,7 +191,7 @@ export function ArcadeClient() {
       <SiteNav active="arcade" slot={<div className="identity" id="login">
           {loadingIdentity ? <span className="quiet">Checking access…</span> : player ? (
             <><button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button><button onClick={() => void logout()} className="text-button">Sign out</button></>
-          ) : <span className="quiet">SIGN IN BELOW</span>}
+          ) : <Link className="nav-login" href="/signin?returnTo=/avatar">SIGN IN</Link>}
         </div>} />
 
       <section className="hero" id="top"><p className="eyebrow">ARCADE / SELECT A CABINET</p><h1>ONE MORE<br /><i>RUN.</i></h1>
@@ -260,17 +203,17 @@ export function ArcadeClient() {
         {Object.values(GAMES).map((game, index) => (
           <article className="arcade-machine" key={game.id}>
             <div className="arcade-machine__visual">
-              <button className="arcade-machine__screen" type="button" onClick={() => requestScoreRun(game)} aria-label={`${player ? "Start score run for" : "Sign in to play"} ${game.title}`}>
+              <button className="arcade-machine__screen" type="button" onClick={() => requestScoreRun(game)} aria-label={`${gameActionLabel(player)} ${game.title}`}>
                 <img src={game.previewImage} alt="" />
                 <span className="arcade-machine__screen-shade" aria-hidden="true" />
                 <span className="arcade-machine__screen-logo" aria-hidden="true">{cabinetWordmark(game.id)}</span>
-                <span className="arcade-machine__screen-prompt" aria-hidden="true">{player ? "SCORE RUN" : "SIGN IN TO PLAY"}</span>
+                <span className="arcade-machine__screen-prompt" aria-hidden="true">{gameActionLabel(player)}</span>
               </button>
               <span className="arcade-machine__marquee" aria-hidden="true">{cabinetWordmark(game.id)}</span>
               <img className="arcade-machine__shell" src={cabinetShell(game.id)} alt="" aria-hidden="true" />
             </div>
             <div className="arcade-machine__actions">
-              <button type="button" onClick={() => requestScoreRun(game)}>{player ? "SCORE RUN" : "SIGN IN TO PLAY"}</button>
+              <button type="button" onClick={() => requestScoreRun(game)}>{gameActionLabel(player)}</button>
             </div>
             <p className="arcade-machine__rank" aria-live="polite">0{index + 1} · {leaderboardPlaque(player, viewerScores[game.id] ?? null)}</p>
           </article>
@@ -278,12 +221,12 @@ export function ArcadeClient() {
       </section>
 
       <section className="arcade-group-actions" aria-label="Arcade account and leaderboard actions">
-        {player ? <button className="control-tile is-selected" onClick={() => setProfileOpen(true)}><i aria-hidden="true">▶</i><b>SIGNED IN AS {player.handle ?? player.displayName}</b></button> : <button className="control-tile is-selected" onClick={openGoogleSignIn}><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></button>}
+        {player ? <button className="control-tile is-selected" onClick={() => setProfileOpen(true)}><i aria-hidden="true">▶</i><b>SIGNED IN AS {player.handle ?? player.displayName}</b></button> : <Link className="control-tile is-selected" href="/signin?returnTo=/avatar"><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></Link>}
         <Link className="control-tile" href="/leaderboard"><i aria-hidden="true">▶</i><b>CHECK LEADERBOARD</b></Link>
       </section>
 
       <section className="rules">
-        <p><strong>How it works:</strong> only your best verified score per game is kept. Top 10 boards are provisional until the campaign closes.</p>
+        <p><strong>How it works:</strong> every verified BITS Goa player can save PBs. Public Top 10 boards only show eligible 2026-batch usernames and remain provisional until the campaign closes.</p>
         {CAMPAIGN.registrationUrl ? <a href={CAMPAIGN.registrationUrl} target="_blank" rel="noreferrer">Open the induction form ↗</a> : null}
       </section>
 
@@ -294,9 +237,12 @@ export function ArcadeClient() {
             <button className="text-button" onClick={() => setActiveGame(null)}>Close cabinet</button>
           </div>
           <iframe
+            ref={gameFrameRef}
             title={activeGame.title}
             src={`${activeGame.embedPath}&run=${encodeURIComponent(activeRun?.runId ?? "preview")}&seed=${encodeURIComponent(activeRun?.seed ?? "")}&pb=${encodeURIComponent(String(viewerScores[activeGame.id]?.score ?? 0))}`}
             className="game-frame"
+            tabIndex={0}
+            onLoad={() => gameFrameRef.current?.focus()}
             allow="fullscreen"
           />
         </div>
@@ -308,7 +254,7 @@ export function ArcadeClient() {
 
 export function AvatarStudio({ handle, avatar, error, onHandle, onAvatar, onSave }: { handle: string; avatar: AvatarConfig; error: string; onHandle: (value: string) => void; onAvatar: (value: AvatarConfig) => void; onSave: () => void }) {
   const champion = championFor(avatar);
-  return <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Create your arcade profile"><div className="profile-modal avatar-studio"><section className="avatar-preview-panel"><p>PLAYER CARD / 01</p><AvatarPreview avatar={avatar} /><small>FULL-BODY TEDx FIT · TEMPLATE ART CAN BE REPLACED LATER</small></section><section className="avatar-controls"><p>PROFILE SETUP / CHOOSE YOUR CHAMPION</p><h2>BUILD YOUR<br /><em>PLAYER.</em></h2><label>PUBLIC CALLSIGN<input value={handle} maxLength={16} placeholder="e.g. stageleft" onChange={(event) => onHandle(event.target.value)} /></label><div className="champion-picker" aria-label="Champion template">{CHAMPION_TEMPLATES.map((template) => <button type="button" key={template.id} className={avatar.template === template.id ? "is-selected" : ""} onClick={() => onAvatar({ template: template.id })}><ChampionSprite champion={template} /><span>{template.name}</span></button>)}</div><section className="champion-lore"><p>{champion.name} <span>{champion.role}</span></p><blockquote>{champion.origin}</blockquote><strong>{champion.quirk}</strong><div className="champion-stats">{Object.entries(champion.stats).map(([stat, amount]) => <span key={stat}>{stat}<i>{"■".repeat(amount)}{"□".repeat(5 - amount)}</i></span>)}</div></section>{error ? <p className="profile-error">{error}</p> : null}<button className="big-button big-button--red" onClick={onSave}>LOCK IN PLAYER CARD <span>→</span></button><small>Your Google name stays private. This callsign appears on the board.</small></section></div></div>;
+  return <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Create your arcade profile"><div className="profile-modal avatar-studio"><section className="avatar-preview-panel"><p>PLAYER CARD / 01</p><AvatarPreview avatar={avatar} /><small>FULL-BODY TEDx FIT · TEMPLATE ART CAN BE REPLACED LATER</small></section><section className="avatar-controls"><p>PROFILE SETUP / CHOOSE YOUR CHAMPION</p><h2>BUILD YOUR<br /><em>PLAYER.</em></h2><label>PUBLIC USERNAME · 16 CHARACTERS MAX<input value={handle} maxLength={16} placeholder="e.g. stageleft" onChange={(event) => onHandle(event.target.value)} /></label><div className="champion-picker" aria-label="Champion template">{CHAMPION_TEMPLATES.map((template) => <button type="button" key={template.id} className={avatar.template === template.id ? "is-selected" : ""} onClick={() => onAvatar({ template: template.id })}><ChampionSprite champion={template} /><span>{template.name}</span></button>)}</div><section className="champion-lore"><p>{champion.name} <span>{champion.role}</span></p><blockquote>{champion.origin}</blockquote><strong>{champion.quirk}</strong><div className="champion-stats">{Object.entries(champion.stats).map(([stat, amount]) => <span key={stat}>{stat}<i>{"■".repeat(amount)}{"□".repeat(5 - amount)}</i></span>)}</div></section>{error ? <p className="profile-error">{error}</p> : null}<button className="big-button big-button--red" onClick={onSave}>LOCK IN PLAYER CARD <span>→</span></button><small>Your Google name stays private. Only this username appears on the leaderboard.</small></section></div></div>;
 }
 
 function AvatarPreview({ avatar }: { avatar: AvatarConfig }) {
@@ -334,6 +280,13 @@ function cabinetShell(gameId: GameId) {
 
 function leaderboardPlaque(player: Player, personalBest: ViewerScore) {
   if (!player) return "SIGN IN TO TRACK YOUR RANK";
-  if (!player.handle) return "CHOOSE A CALLSIGN TO TRACK YOUR RANK";
-  return personalBest ? `PB ${personalBest.score} · YOU ARE #${personalBest.rank}` : "NO VERIFIED PB YET";
+  if (!player.handle) return "CHOOSE A USERNAME TO SAVE PBS";
+  if (!player.leaderboardEligible) return personalBest ? `PRIVATE PB ${personalBest.score}` : "PB SAVED PRIVATELY";
+  return personalBest?.rank ? `PB ${personalBest.score} · YOU ARE #${personalBest.rank}` : "NO VERIFIED PB YET";
+}
+
+function gameActionLabel(player: Player) {
+  if (!player) return "SIGN IN TO PLAY";
+  if (!player.handle) return "SET UP PROFILE";
+  return "SCORE RUN";
 }

@@ -2,6 +2,7 @@ import { requireSessionUser } from "../../../lib/auth";
 import { ApiError, jsonError, parseJsonObject, requireSameOrigin } from "../../../lib/http";
 import { getRuntimeEnv } from "../../../lib/runtime";
 import { normalizeAvatar } from "../../../config/avatar";
+import { isLeaderboardEligibleEmail } from "../../../config/campaign";
 
 export const runtime = "edge";
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       throw error;
     }
 
-    return Response.json({ player: { email: user.email, displayName: user.displayName, handle, avatarId: null, avatar } });
+    return Response.json({ player: { email: user.email, displayName: user.displayName, handle, avatarId: null, avatar, leaderboardEligible: isLeaderboardEligibleEmail(user.email) } });
   } catch (error) {
     return jsonError(error);
   }

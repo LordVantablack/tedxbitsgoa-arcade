@@ -24,6 +24,7 @@ test("defines the TEDxBITSGoa arcade shell instead of the starter preview", asyn
   assert.match(landing, /AVATAR/);
   assert.match(leaderboard, /HIGH/);
   assert.match(nav, /LEADERBOARD/);
+  assert.doesNotMatch(nav, /GAME LAB/);
   assert.match(client, /SIGN IN TO PLAY/);
   assert.match(leaderboard, /YOUR VERIFIED PB/);
   assert.doesNotMatch(client, /PLAY DEMO/);
@@ -32,6 +33,38 @@ test("defines the TEDxBITSGoa arcade shell instead of the starter preview", asyn
   assert.match(appManifest, /TEDxBITSGoa Arcade/);
   assert.match(serviceWorker, /network-first/);
   assert.doesNotMatch(page + layout + client + landing, /SkeletonPreview|react-loading-skeleton|codex-preview/i);
+});
+
+test("lets BITS Goa players play while keeping the leaderboard 2026-only", async () => {
+  const [campaign, startRun, finishRun, leaderboardRoute, profileRoute, signin, avatarPage, landing, client] = await Promise.all([
+    readFile(new URL("../config/campaign.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/runs/start/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/runs/finish/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/leaderboards/[gameId]/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/profile/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/signin/SignInClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/avatar/AvatarPageClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/LandingClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ArcadeClient.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(campaign, /\^f2026\\d\{4\}@goa\\\.bits-pilani\\\.ac\\\.in\$/);
+  assert.match(campaign, /leaderboardEligibleEmailGlob/);
+  assert.doesNotMatch(startRun, /isLeaderboardEligibleEmail\(user\.email\)/);
+  assert.doesNotMatch(finishRun, /isLeaderboardEligibleEmail\(user\.email\)/);
+  assert.match(leaderboardRoute, /SELECT p\.handle AS displayName/);
+  assert.match(leaderboardRoute, /LOWER\(p\.email\) GLOB/);
+  assert.match(leaderboardRoute, /LENGTH\(p\.handle\) BETWEEN 3 AND 16/);
+  assert.match(leaderboardRoute, /leaderboardEligible = isLeaderboardEligibleEmail\(session\.email\)/);
+  assert.match(leaderboardRoute, /rank: number \| null/);
+  assert.doesNotMatch(leaderboardRoute, /COALESCE\(p\.handle, p\.display_name\)/);
+  assert.match(profileRoute, /\{2,15\}/);
+  assert.match(client, /maxLength=\{16\}/);
+  assert.match(client, /PRIVATE PB/);
+  assert.match(signin, /router\.replace\("\/avatar"\)/);
+  assert.match(avatarPage, /router\.push\("\/arcade"\)/);
+  assert.match(landing, /profile-poster__avatar/);
+  assert.match(signin, /Any BITS Goa account can play/);
 });
 
 test("keeps the scoreable game sources and database migration in the shipped project", async () => {
