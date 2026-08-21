@@ -18,7 +18,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
     id: "deadline-dash",
     title: "Sober Parhawk",
     shortDescription: "Tap to keep Parhawk flying through the D spine; avoid the columns and survive as long as you can.",
-    version: "3.1.0",
+    version: "3.1.1",
     embedPath: "/games/deadline-dash/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/stage-flight-cover.svg",
     scoreLabel: "gates",

@@ -149,7 +149,7 @@ export function ArcadeClient() {
           ? `New personal best: ${data.personalBest?.score ?? message.score}. It’s now on the provisional board.`
           : `New personal best: ${data.personalBest?.score ?? message.score}. It’s saved privately to your account.`
         : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`;
-    setNotice(activeRun.gameId === "stage-stack" ? `${resultNotice} Hit Build again for a fresh verified run.` : resultNotice);
+    setNotice(activeRun.gameId === "deadline-dash" ? `${resultNotice} Hit Fly again for a fresh verified run.` : resultNotice);
     if (data.personalBest && Number.isSafeInteger(data.personalBest.score)) {
       setViewerScores((current) => ({
         ...current,
@@ -160,7 +160,7 @@ export function ArcadeClient() {
         },
       }));
     }
-    if (activeRun.gameId !== "stage-stack") {
+    if (activeRun.gameId !== "deadline-dash") {
       setActiveRun(null);
       setActiveGame(null);
     }

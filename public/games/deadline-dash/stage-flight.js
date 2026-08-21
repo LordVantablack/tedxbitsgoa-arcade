@@ -2,6 +2,7 @@
   "use strict";
 
   const canvas = document.getElementById("stage-flight");
+  const restartButton = document.getElementById("stage-flight-restart");
   const status = document.getElementById("stage-flight-status");
   const context = canvas.getContext("2d");
   const query = new URLSearchParams(window.location.search);
@@ -97,11 +98,13 @@
     player.velocity = 0;
     player.tilt = 0;
     seedState = hash(query.get("seed") || `stage-flight-${Date.now()}`);
+    if (restartButton) restartButton.hidden = true;
     announce("Sober Parhawk ready. Press space or tap to begin.");
   }
 
   function start() {
     mode = "playing";
+    if (restartButton) restartButton.hidden = true;
     startedAt = Date.now();
     nextGateAt = performance.now() + 900;
     flap();
@@ -137,6 +140,7 @@
     if (mode === "over") return;
     mode = "over";
     player.velocity = Math.max(player.velocity, 120);
+    if (restartButton) restartButton.hidden = false;
     announce(`Run closed. Score ${score}.`);
     if (!scoreable || sentResult) return;
     sentResult = true;
@@ -337,7 +341,7 @@
   }
 
   function drawOverCard() {
-    const finalLine = scoreable ? "SCORE SENT. START A NEW RUN FROM THE CABINET" : "TAP OR SPACE TO FLY AGAIN";
+    const finalLine = scoreable ? "SCORE SENT. USE FLY AGAIN FOR A FRESH RUN" : "TAP OR SPACE TO FLY AGAIN";
     drawPanel("RUN CLOSED", `SCORE ${String(score).padStart(2, "0")}`, finalLine);
   }
 
@@ -385,8 +389,18 @@
     else if (!scoreable) reset();
   }
 
+  function restartRun(event) {
+    if (event) event.preventDefault();
+    if (scoreable && window.parent !== window) {
+      window.parent.postMessage({ type: "tedx:restart-game", gameId: "deadline-dash" }, window.location.origin);
+      return;
+    }
+    reset();
+  }
+
   window.addEventListener("resize", resize);
   canvas.addEventListener("pointerdown", handleAction);
+  if (restartButton) restartButton.addEventListener("click", restartRun);
   window.addEventListener("keydown", (event) => {
     if (event.code === "Space" || event.code === "ArrowUp") handleAction(event);
   });
