@@ -39,6 +39,11 @@ bypass for college identity.
 
 ## Before publishing
 
+Use the [launch and handoff checklist](docs/LAUNCH-HANDOFF.html) as the source
+of truth for the production-readiness gates, copy approvals, mobile/PWA checks,
+and ownership handoff. Do not open the campaign until its required gates are
+complete.
+
 - Create a production Google OAuth **Web application** client and add the real
   arcade URL to its authorised JavaScript origins.
 - Set the production secrets in hosting: `GOOGLE_CLIENT_ID`, `SESSION_SECRET`,
