@@ -3433,6 +3433,14 @@ function onCanvasTouchEnd(event) {
   }
 }
 
+function onStartSurfaceClick(event) {
+  if (isEmbeddedGame && isSwipeControlTarget(event.target)) return;
+  if (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER) {
+    primeAudioContext();
+    handleAction("start");
+  }
+}
+
 function updateMobileControlSizing() {
   const coarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
   const root = document.documentElement;
@@ -4242,7 +4250,7 @@ function drawIdeaSignalStartScreen() {
 
   canvasContext.fillStyle = "#F1EEE8";
   canvasContext.font = "18px Raster Forge";
-  canvasContext.fillText("TAP THE SIGNAL TO BEGIN", centerX, logicalH * 0.86);
+  canvasContext.fillText("CLICK ANYWHERE TO START", centerX, logicalH * 0.86);
   canvasContext.fillStyle = "#C8BFAE";
   canvasContext.font = "13px Raster Forge";
   canvasContext.fillText("OR PRESS ENTER", centerX, logicalH * 0.91);
@@ -4322,12 +4330,12 @@ function drawPhaseOverlay() {
   }
 
   if (phase === GAME_PHASE_GAMEOVER) {
-    drawOverlay("GAME OVER", "Tap the signal or Restart");
+    drawOverlay("GAME OVER", "Click anywhere or Restart");
     return;
   }
 
   if (phase === GAME_PHASE_DYING && lives <= 0) {
-    drawOverlay("GAME OVER", "Tap the signal or Restart");
+    drawOverlay("GAME OVER", "Click anywhere or Restart");
     return;
   }
 
@@ -4701,12 +4709,8 @@ function wireUiEvents() {
   swipeTarget.addEventListener("touchmove", onCanvasTouchMove, { passive: false });
   swipeTarget.addEventListener("touchend", onCanvasTouchEnd, { passive: false });
   swipeTarget.addEventListener("touchcancel", clearSwipeState, { passive: true });
-  canvas.addEventListener("click", () => {
-    if (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER) {
-      primeAudioContext();
-      handleAction("start");
-    }
-  });
+  const startClickTarget = isEmbeddedGame ? document : canvas;
+  startClickTarget.addEventListener("click", onStartSurfaceClick);
 
   window.addEventListener("keydown", (event) => {
     const normalizedKey = normalizeKeyName(event.key);
