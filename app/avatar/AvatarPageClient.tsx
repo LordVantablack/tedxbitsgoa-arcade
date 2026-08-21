@@ -15,9 +15,13 @@ export function AvatarPageClient() {
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  useEffect(() => { void fetch("/api/me", { cache: "no-store" }).then((response) => response.json()).then((data: { player: Player }) => { if (!data.player) { router.replace("/signin?returnTo=/avatar"); return; } setPlayer(data.player); setHandle(data.player.handle ?? ""); setAvatar(data.player.avatar); }).finally(() => setLoading(false)); }, [router]);
+  useEffect(() => { void fetch("/api/me", { cache: "no-store" }).then((response) => response.json()).then((data: { player: Player }) => { if (!data.player) { router.replace("/signin?returnTo=/avatar"); return; } setPlayer(data.player); setHandle(data.player.handle ?? ""); setAvatar(data.player.avatar); if (!data.player.handle) setError("Choose a public username before starting a game."); }).finally(() => setLoading(false)); }, [router]);
 
   async function save() {
+    if (!handle.trim()) {
+      setError("Please type a public username before locking your player card.");
+      return;
+    }
     const response = await fetch("/api/profile", { method: "POST", headers: { "content-type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ handle, avatar }) });
     const data = (await response.json()) as { player?: Player; error?: string };
     if (!response.ok || !data.player) return setError(data.error ?? "Could not save your player card.");

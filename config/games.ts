@@ -17,7 +17,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   "deadline-dash": {
     id: "deadline-dash",
     title: "Sober Parhawk",
-    shortDescription: "Guide Parhawk through B-Dome's portico gates. One mistimed flap closes the run.",
+    shortDescription: "Tap to keep Parhawk flying through the B-Dome gates. B-Dome is the campus auditorium area; avoid the columns and survive as long as you can.",
     version: "3.0.0",
     embedPath: "/games/deadline-dash/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/stage-flight-cover.svg",
@@ -27,7 +27,7 @@ export const GAMES: Record<GameId, GameDefinition> = {
   "stage-stack": {
     id: "stage-stack",
     title: "B-Dome Stack",
-    shortDescription: "Drop clean blocks, build a streak, do not waste the lives.",
+    shortDescription: "Drop each moving block neatly onto the tower. Cleaner landings build better streaks; messy drops cost lives.",
     version: "1.0.0",
     embedPath: "/games/stage-stack/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/stage-stack-cover.png",
@@ -37,12 +37,12 @@ export const GAMES: Record<GameId, GameDefinition> = {
   "maze-chase": {
     id: "maze-chase",
     title: "Coco Chase",
-    shortDescription: "Move through the circuit, collect bright ideas, and stay one step ahead.",
+    shortDescription: "Press Start Game, then swipe through the maze to collect bright ideas while staying ahead of the chasers.",
     version: "1.0.0",
     embedPath: "/games/maze-chase/index.html?embed=1",
     previewImage: "/media/arcade-cabinets/maze-chase-cover.png",
     scoreLabel: "points",
-    controlHint: "Swipe or use the direction buttons / arrow keys.",
+    controlHint: "Press Start Game, then swipe on phone or use arrow keys on laptop.",
   },
 };
 

@@ -122,7 +122,8 @@ export function ArcadeClient() {
       return;
     }
     if (!player.handle) {
-      router.push("/avatar");
+      setProfileError("Choose a public username before starting a game.");
+      setProfileOpen(true);
       return;
     }
     const response = await fetch("/api/runs/start", {
@@ -148,6 +149,10 @@ export function ArcadeClient() {
   }
 
   async function saveProfile() {
+    if (!handle.trim()) {
+      setProfileError("Please type a public username before locking your player card.");
+      return;
+    }
     const response = await fetch("/api/profile", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -171,7 +176,8 @@ export function ArcadeClient() {
       return;
     }
     if (!player.handle) {
-      router.push("/avatar");
+      setProfileError("Choose a public username before starting a game.");
+      setProfileOpen(true);
       return;
     }
     void launchGame(game);
@@ -207,6 +213,8 @@ export function ArcadeClient() {
             <div className="arcade-machine__actions">
               <button type="button" onClick={() => requestScoreRun(game)}>{gameActionLabel(player)}</button>
             </div>
+            <p className="arcade-machine__description">{game.shortDescription}</p>
+            <p className="arcade-machine__controls">{game.controlHint}</p>
             <p className="arcade-machine__rank" aria-live="polite">0{index + 1} · {leaderboardPlaque(player, viewerScores[game.id] ?? null)}</p>
           </article>
         ))}
@@ -225,7 +233,7 @@ export function ArcadeClient() {
       {activeGame ? (
         <div className={`game-modal ${activeGame.id === "maze-chase" ? "game-modal--maze" : ""}`} role="dialog" aria-modal="true" aria-label={`${activeGame.title} game`}>
           <div className="game-modal-bar">
-            <div><strong>{activeGame.title}</strong><span>Scoreable run active</span>{activeGame.id === "maze-chase" ? <em className="maze-rotate-hint">Rotate phone sideways for full-size maze</em> : null}</div>
+            <div><strong>{activeGame.title}</strong><span>Start game, then finish the run to save your PB</span>{activeGame.id === "maze-chase" ? <em className="maze-rotate-hint">Rotate phone sideways for full-size maze</em> : null}</div>
             <button className="text-button" onClick={() => setActiveGame(null)}>Close cabinet</button>
           </div>
           <iframe
@@ -246,7 +254,7 @@ export function ArcadeClient() {
 
 export function AvatarStudio({ handle, avatar, error, onHandle, onAvatar, onSave }: { handle: string; avatar: AvatarConfig; error: string; onHandle: (value: string) => void; onAvatar: (value: AvatarConfig) => void; onSave: () => void }) {
   const champion = championFor(avatar);
-  return <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Create your arcade profile"><div className="profile-modal avatar-studio"><section className="avatar-preview-panel"><p>PLAYER CARD / 01</p><AvatarPreview avatar={avatar} /><small>FULL-BODY TEDx FIT · TEMPLATE ART CAN BE REPLACED LATER</small></section><section className="avatar-controls"><p>PROFILE SETUP / CHOOSE YOUR CHAMPION</p><h2>BUILD YOUR<br /><em>PLAYER.</em></h2><label>PUBLIC USERNAME · 16 CHARACTERS MAX<input value={handle} maxLength={16} placeholder="e.g. stageleft" onChange={(event) => onHandle(event.target.value)} /></label><div className="champion-picker" aria-label="Champion template">{CHAMPION_TEMPLATES.map((template) => <button type="button" key={template.id} className={avatar.template === template.id ? "is-selected" : ""} onClick={() => onAvatar({ template: template.id })}><ChampionSprite champion={template} /><span>{template.name}</span></button>)}</div><section className="champion-lore"><p>{champion.name} <span>{champion.role}</span></p><blockquote>{champion.origin}</blockquote><strong>{champion.quirk}</strong><div className="champion-stats">{Object.entries(champion.stats).map(([stat, amount]) => <span key={stat}>{stat}<i>{"■".repeat(amount)}{"□".repeat(5 - amount)}</i></span>)}</div></section>{error ? <p className="profile-error">{error}</p> : null}<button className="big-button big-button--red" onClick={onSave}>LOCK IN PLAYER CARD <span>→</span></button><small>Your Google name stays private. Only this username appears on the leaderboard.</small></section></div></div>;
+  return <div className="profile-overlay" role="dialog" aria-modal="true" aria-label="Create your arcade profile"><div className="profile-modal avatar-studio"><section className="avatar-preview-panel"><p>PLAYER CARD / 01</p><AvatarPreview avatar={avatar} /><small>FULL-BODY TEDx FIT · TEMPLATE ART CAN BE REPLACED LATER</small></section><section className="avatar-controls"><p>PROFILE SETUP / CHOOSE YOUR CHAMPION</p><h2>BUILD YOUR<br /><em>PLAYER.</em></h2><label>PUBLIC USERNAME · 16 CHARACTERS MAX<span className="profile-input-helper">Type your leaderboard name in the light box below.</span><input value={handle} maxLength={16} placeholder="e.g. stageleft" aria-invalid={Boolean(error)} onChange={(event) => onHandle(event.target.value)} /></label><div className="champion-picker" aria-label="Champion template">{CHAMPION_TEMPLATES.map((template) => <button type="button" key={template.id} className={avatar.template === template.id ? "is-selected" : ""} onClick={() => onAvatar({ template: template.id })}><ChampionSprite champion={template} /><span>{template.name}</span></button>)}</div><section className="champion-lore"><p>{champion.name} <span>{champion.role}</span></p><blockquote>{champion.origin}</blockquote><strong>{champion.quirk}</strong><div className="champion-stats">{Object.entries(champion.stats).map(([stat, amount]) => <span key={stat}>{stat}<i>{"■".repeat(amount)}{"□".repeat(5 - amount)}</i></span>)}</div></section>{error ? <p className="profile-error">{error}</p> : null}<button className="big-button big-button--red" onClick={onSave}>LOCK IN PLAYER CARD <span>→</span></button><small>Your Google name stays private. Only this username appears on the leaderboard.</small></section></div></div>;
 }
 
 function AvatarPreview({ avatar }: { avatar: AvatarConfig }) {
@@ -280,5 +288,5 @@ function leaderboardPlaque(player: Player, personalBest: ViewerScore) {
 function gameActionLabel(player: Player) {
   if (!player) return "SIGN IN TO PLAY";
   if (!player.handle) return "SET UP PROFILE";
-  return "SCORE RUN";
+  return "START GAME";
 }

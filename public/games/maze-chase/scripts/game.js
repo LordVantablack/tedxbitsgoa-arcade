@@ -1317,9 +1317,9 @@ function renderPauseButton() {
 function renderStartButton() {
   if (!startGameButton) return;
   if (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER) {
-    startGameButton.textContent = "Start";
+    startGameButton.textContent = "Start Game";
   } else {
-    startGameButton.textContent = "Play";
+    startGameButton.textContent = "Resume Game";
   }
 }
 
