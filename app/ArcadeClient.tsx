@@ -165,14 +165,6 @@ export function ArcadeClient() {
     setNotice(`Profile locked in. Welcome, ${data.player.handle}.`);
   }
 
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
-    setPlayer(null);
-    setActiveGame(null);
-    setActiveRun(null);
-    setNotice("Signed out. Your verified scores remain safely attached to your account.");
-  }
-
   function requestScoreRun(game: GameDefinition) {
     if (!player) {
       router.push("/signin?returnTo=/avatar");
@@ -190,7 +182,7 @@ export function ArcadeClient() {
       <div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}</div>
       <SiteNav active="arcade" slot={<div className="identity" id="login">
           {loadingIdentity ? <span className="quiet">Checking access…</span> : player ? (
-            <><button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button><button onClick={() => void logout()} className="text-button">Sign out</button></>
+            <span className="welcome-chip">WELCOME, <button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button></span>
           ) : <Link className="nav-login" href="/signin?returnTo=/avatar">SIGN IN</Link>}
         </div>} />
 
@@ -221,7 +213,7 @@ export function ArcadeClient() {
       </section>
 
       <section className="arcade-group-actions" aria-label="Arcade account and leaderboard actions">
-        {player ? <button className="control-tile is-selected" onClick={() => setProfileOpen(true)}><i aria-hidden="true">▶</i><b>SIGNED IN AS {player.handle ?? player.displayName}</b></button> : <Link className="control-tile is-selected" href="/signin?returnTo=/avatar"><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></Link>}
+        {player ? <div className="account-chip" aria-label={`Welcome, ${player.handle ?? player.displayName}`}><span>WELCOME</span><b>{player.handle ?? player.displayName}</b></div> : <Link className="control-tile is-selected" href="/signin?returnTo=/avatar"><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></Link>}
         <Link className="control-tile" href="/leaderboard"><i aria-hidden="true">▶</i><b>CHECK LEADERBOARD</b></Link>
       </section>
 

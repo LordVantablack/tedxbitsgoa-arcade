@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { GAMES, type GameId } from "../../config/games";
 import { SiteNav } from "../SiteNav";
 
@@ -8,12 +9,19 @@ type Entry = { displayName: string; score: number; achievedAt: string };
 type ViewerScore = { score: number; rank: number | null; leaderboardEligible: boolean } | null;
 type Board = { entries: Entry[]; viewer: ViewerScore };
 type Boards = Partial<Record<GameId, Board>>;
+type Player = { displayName: string; handle: string | null } | null;
 
 export function LeaderboardClient() {
   const [boards, setBoards] = useState<Boards>({});
+  const [player, setPlayer] = useState<Player>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    void fetch("/api/me", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: { player: Player }) => setPlayer(data.player))
+      .catch(() => setPlayer(null));
+
     void Promise.all(Object.values(GAMES).map(async (game) => {
       const response = await fetch(`/api/leaderboards/${game.id}`, { cache: "no-store" });
       const data = response.ok ? await response.json() as Board : { entries: [], viewer: null };
@@ -23,7 +31,7 @@ export function LeaderboardClient() {
 
   return (
     <main className="experience leaderboard-page">
-      <SiteNav active="leaderboard" />
+      <SiteNav active="leaderboard" slot={player ? <span className="welcome-chip">WELCOME, <Link className="profile-link" href="/avatar">{player.handle ?? player.displayName}</Link></span> : undefined} />
       <section className="leaderboard-hero">
         <p className="eyebrow">ARCADE / VERIFIED TOP 10</p>
         <h1>HIGH<br /><i>SCORES.</i></h1>

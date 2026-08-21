@@ -36,7 +36,7 @@ test("defines the TEDxBITSGoa arcade shell instead of the starter preview", asyn
 });
 
 test("lets BITS Goa players play while keeping the leaderboard 2026-only", async () => {
-  const [campaign, startRun, finishRun, leaderboardRoute, profileRoute, signin, avatarPage, landing, client] = await Promise.all([
+  const [campaign, startRun, finishRun, leaderboardRoute, profileRoute, signin, avatarPage, landing, client, leaderboardClient, globals] = await Promise.all([
     readFile(new URL("../config/campaign.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/runs/start/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/runs/finish/route.ts", import.meta.url), "utf8"),
@@ -46,8 +46,11 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
     readFile(new URL("../app/avatar/AvatarPageClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/LandingClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ArcadeClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/leaderboard/LeaderboardClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
+  assert.match(campaign, /enabled: true/);
   assert.match(campaign, /\^f2026\\d\{4\}@goa\\\.bits-pilani\\\.ac\\\.in\$/);
   assert.match(campaign, /leaderboardEligibleEmailGlob/);
   assert.doesNotMatch(startRun, /isLeaderboardEligibleEmail\(user\.email\)/);
@@ -65,6 +68,8 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(avatarPage, /router\.push\("\/arcade"\)/);
   assert.match(landing, /profile-poster__avatar/);
   assert.match(signin, /Any BITS Goa account can play/);
+  assert.match(client + leaderboardClient, /welcome-chip/);
+  assert.match(globals, /leaderboard-page__grid[\s\S]*grid-template-columns:1fr/);
 });
 
 test("keeps the scoreable game sources and database migration in the shipped project", async () => {

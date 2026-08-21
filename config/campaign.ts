@@ -1,8 +1,8 @@
 export const CAMPAIGN = {
   name: "TEDxBITSGoa Arcade",
   registrationUrl: "",
-  // Keep this false until the real dates, form URL, and Google credentials are set.
-  enabled: false,
+  // Turn this off again when the event closes.
+  enabled: true,
   startsAt: null as string | null,
   endsAt: null as string | null,
   leaderboardSize: 10,
