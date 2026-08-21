@@ -2,6 +2,7 @@ import { CAMPAIGN } from "../../../../config/campaign";
 import { GAMES, isGameId } from "../../../../config/games";
 import { ApiError, jsonError } from "../../../../lib/http";
 import { getRuntimeEnv } from "../../../../lib/runtime";
+import { getSessionUser } from "../../../../lib/auth";
 
 export const runtime = "edge";
 
@@ -25,7 +26,26 @@ export async function GET(
       .bind(gameId, CAMPAIGN.leaderboardSize)
       .all<{ displayName: string; score: number; achievedAt: string }>();
 
-    return Response.json({ game: GAMES[gameId], entries: results ?? [], provisional: true });
+    const session = await getSessionUser();
+    let viewer: { score: number; rank: number } | null = null;
+    if (session) {
+      const personalBest = await getRuntimeEnv().DB
+        .prepare("SELECT score, achieved_at AS achievedAt FROM personal_bests WHERE game_id = ? AND google_subject = ?")
+        .bind(gameId, session.googleSubject)
+        .first<{ score: number; achievedAt: string }>();
+      if (personalBest) {
+        const ahead = await getRuntimeEnv().DB
+          .prepare(
+            `SELECT COUNT(*) AS count FROM personal_bests
+             WHERE game_id = ? AND (score > ? OR (score = ? AND achieved_at < ?))`,
+          )
+          .bind(gameId, personalBest.score, personalBest.score, personalBest.achievedAt)
+          .first<{ count: number }>();
+        viewer = { score: personalBest.score, rank: (ahead?.count ?? 0) + 1 };
+      }
+    }
+
+    return Response.json({ game: GAMES[gameId], entries: results ?? [], viewer, provisional: true });
   } catch (error) {
     return jsonError(error);
   }

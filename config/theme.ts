@@ -18,8 +18,8 @@ export const THEME = {
   merchShirtSrc: "",
   instagramUrl: "https://www.instagram.com/tedxbitsgoa/",
   gameLabels: {
-    "deadline-dash": "Deadline Dash",
-    "stage-stack": "Stage Stack",
-    "maze-chase": "Maze Chase",
+    "deadline-dash": "Sober Parhawk",
+    "stage-stack": "B-Dome Stack",
+    "maze-chase": "Coco Chase",
   },
 } as const;

@@ -62,9 +62,7 @@ export const flightAction = (instance, engine) => {
 }
 
 export const flightPainter = (instance, engine) => {
-  const { ctx } = engine
-  const flight = engine.getImg(instance.imgName)
-  ctx.drawImage(flight, instance.x, instance.y, instance.width, instance.height)
+  // Keep the original timing triggers but omit upstream decorative sprites.
 }
 
 export const addFlight = (engine, number, type) => {

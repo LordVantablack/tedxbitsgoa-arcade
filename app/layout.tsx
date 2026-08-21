@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { PwaServiceWorker } from "./PwaServiceWorker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,9 +22,12 @@ export const metadata: Metadata = {
     images: [{ url: "/og-arcade.png", width: 1731, height: 909, alt: "A red-lit arcade cabinet" }],
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/arcade-icon.svg",
+    shortcut: "/arcade-icon.svg",
+    apple: "/arcade-icon.svg",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "TEDx Arcade", statusBarStyle: "black-translucent" },
 };
 
 export default function RootLayout({
@@ -34,6 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <PwaServiceWorker />
         {children}
       </body>
     </html>

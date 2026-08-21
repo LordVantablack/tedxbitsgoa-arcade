@@ -136,6 +136,11 @@ export const blockAction = (instance, engine, time) => {
           line.y = blockY
           line.x = i.x - i.calWidth
           line.collisionX = line.x + i.width
+          engine.setVariable(constant.landingDust, {
+            x: i.x + i.calWidth,
+            y: line.y,
+            start: time
+          })
           // 作弊检测 超出左边或右边1／3
           const cheatWidth = i.width * 0.3
           if (i.x > engine.width - (cheatWidth * 2)

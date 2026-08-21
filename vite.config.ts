@@ -51,6 +51,9 @@ export default defineConfig(async () => {
       vinext(),
       sites(),
       cloudflare({
+        // The Worker inspector is not needed for this local arcade preview and
+        // can be unavailable in constrained development environments.
+        inspectorPort: false,
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
         config: localBindingConfig,
       }),

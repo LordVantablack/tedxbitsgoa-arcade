@@ -12,7 +12,7 @@ or public naming.
 
 | Cabinet | Visuals | Sounds | Feel / difficulty |
 | --- | --- | --- | --- |
-| Deadline Dash | Player, obstacles, clouds, background, score UI | Jump, collision, milestone sounds | Start speed, max speed, acceleration, obstacle spacing |
+| Stage Flight | Flight card, light gates, stage rig, score UI | Flap, gate-clear, collision, ambient loop | Gravity, flap velocity, gate speed, gap size |
 | Stage Stack | Block texture, rope, background, hearts, menus, particles | Drop, perfect drop, miss, game-over, ambient loop | Swing speed, block sway, lives, regular score, perfect streak bonus |
 | Maze Chase | Maze wall style, player, pursuers, pellets, fruit, HUD, title | Movement tick, power-up, pursuit, death, win/loop music | Starting lives, level speed, frightened time, score table |
 

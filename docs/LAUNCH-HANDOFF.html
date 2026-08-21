@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TEDxBITSGoa Arcade — Launch & Handoff</title>
+  <style>
+    :root { --ink:#101010; --paper:#f3efe8; --red:#e62b1e; --muted:#655f58; --line:#c9c1b7; --good:#16734b; --warn:#9b5400; }
+    * { box-sizing:border-box; } body { margin:0; background:#e8e2d9; color:var(--ink); font:16px/1.5 Arial,sans-serif; }
+    .page { width:min(1120px,calc(100% - 32px)); margin:32px auto 64px; background:var(--paper); border:1px solid #bbb2a8; box-shadow:12px 12px 0 #191919; }
+    header { padding:clamp(28px,6vw,72px); color:#fff8ef; background:#111; border-bottom:8px solid var(--red); }
+    .eyebrow { margin:0 0 12px; color:#ff796e; font:700 12px/1 ui-monospace,monospace; letter-spacing:.13em; }
+    h1 { max-width:12ch; margin:0; font-size:clamp(2.8rem,7vw,6.4rem); line-height:.83; letter-spacing:-.07em; text-transform:uppercase; } h1 i { color:var(--red); font-style:normal; }
+    header p { max-width:54ch; margin:28px 0 0; color:#d7d0c7; } main { padding:clamp(24px,5vw,58px); }
+    .note { margin:0 0 38px; padding:18px 20px; border-left:5px solid var(--red); background:#fff8ef; }
+    h2 { margin:48px 0 15px; font-size:1.5rem; letter-spacing:-.035em; } h3 { margin:0 0 8px; font-size:1rem; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; } .card { padding:18px; border:1px solid var(--line); background:#fcf9f4; } .card p { margin:0; color:var(--muted); font-size:.92rem; }
+    .pill { display:inline-block; margin-bottom:10px; padding:4px 7px; font:700 10px/1 ui-monospace,monospace; letter-spacing:.08em; } .ready { color:#075b39; background:#d8f0df; } .human { color:#834400; background:#ffe4b7; } .blocked { color:#8f211c; background:#ffd9d5; }
+    table { width:100%; border-collapse:collapse; overflow:hidden; border:1px solid var(--line); background:#fffdf9; } th,td { padding:13px 12px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; } th { background:#171717; color:#fff; font:700 11px/1.2 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; } tr:last-child td { border-bottom:0; } td:first-child { width:30px; color:var(--red); font-weight:700; }
+    .check { font-size:20px; } .pending { color:var(--warn); } .done { color:var(--good); } code { padding:2px 4px; background:#ede7df; font-size:.9em; } ul { margin:8px 0 0; padding-left:20px; } li+li { margin-top:5px; }
+    .copy { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .copy blockquote { margin:0; padding:18px; border:1px solid var(--line); background:#fffdf9; } blockquote p { margin:0 0 9px; color:var(--muted); font-size:.78rem; font-weight:700; letter-spacing:.08em; } blockquote strong { font-size:1.05rem; }
+    footer { padding:24px clamp(24px,5vw,58px); background:#171717; color:#eee7de; font-size:.85rem; } @media(max-width:720px) { .page { width:calc(100% - 20px); margin:10px auto 28px; box-shadow:6px 6px 0 #191919; } .grid,.copy { grid-template-columns:1fr; } main { padding:24px 18px; } th,td { padding:10px 8px; font-size:.86rem; } }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <header>
+      <p class="eyebrow">TEDxBITSGoa / OWNER HANDOFF / PRE-LAUNCH</p>
+      <h1>One more<br><i>check.</i></h1>
+      <p>This is the single handoff sheet for taking the arcade from a working build to a safe private preview, then a public campaign. Do not open the campaign until every red or orange item has an owner and a recorded decision.</p>
+    </header>
+    <main>
+      <p class="note"><strong>Current engineering state:</strong> production build, root tests, and Coco Chase unit/regression tests pass. The sign-in wall, verified PB/rank flow, renamed games, and installable web-app shell are implemented. A real device and authenticated production preview are still required before launch.</p>
+
+      <section>
+        <h2>What is ready in code</h2>
+        <div class="grid">
+          <article class="card"><span class="pill ready">IMPLEMENTED</span><h3>Verified play</h3><p>Google Workspace verification, one-time run tickets, PB-only storage, and a top-10 board are server-backed.</p></article>
+          <article class="card"><span class="pill ready">IMPLEMENTED</span><h3>Game identity</h3><p>The cabinets are named Sober Parhawk, B-Dome Stack, and Coco Chase. The cabinet entry point requires sign-in.</p></article>
+          <article class="card"><span class="pill ready">IMPLEMENTED</span><h3>Phone install</h3><p>The full arcade has a web manifest, home-screen icon, Apple web-app metadata, and a safe network-first service worker.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Launch gates — complete in this order</h2>
+        <table>
+          <thead><tr><th></th><th>Gate</th><th>Required action</th><th>Owner / evidence</th></tr></thead>
+          <tbody>
+            <tr><td class="check pending">□</td><td><strong>Decide campaign copy</strong></td><td>Approve exact dates, registration form URL, public display-name policy, and any induction/fast-track wording.</td><td>Organiser; record final wording below.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Configure campaign</strong></td><td>Set <code>startsAt</code>, <code>endsAt</code>, and <code>registrationUrl</code> in <code>config/campaign.ts</code>. Keep <code>enabled: false</code> until private preview passes.</td><td>Developer; PR or commit link.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Provision hosting + D1</strong></td><td>Create the Cloudflare-compatible site and D1 database binding called <code>DB</code>; apply the repo’s Drizzle migrations.</td><td>Platform owner; deployment URL and migration log.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Set secrets</strong></td><td>Create a production Google OAuth Web client for the exact final HTTPS origin. Set <code>GOOGLE_CLIENT_ID</code> and a fresh 32+ character <code>SESSION_SECRET</code> in hosting, never Git.</td><td>Platform owner; secret names visible, values hidden.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Asset clearance</strong></td><td>Confirm every visual and sound asset is original, commissioned, or licensed. Review Coco Chase especially; it uses upstream mechanics but must not ship protected Pac-Man branding, art, character names, or audio.</td><td>Creative/organiser; signed-off asset list.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Private preview</strong></td><td>Deploy privately. Test an allowed BITS Goa account, a rejected non-BITS account, all three score runs, PB replacement, ties, and leaderboard ranks.</td><td>Two testers; recorded results.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Real-device pass</strong></td><td>Test Safari on an iPhone and Chrome on Android: sign-in, one run per game, Add to Home Screen/Install, portrait/landscape, close/reopen, and a slow-network attempt.</td><td>Two testers; device/browser/version notes.</td></tr>
+            <tr><td class="check pending">□</td><td><strong>Open campaign</strong></td><td>Reconfirm all gates, set <code>enabled: true</code>, deploy, and verify the live URL once more before sharing it.</td><td>Organiser + developer; timestamp.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Copy & wording approval</h2>
+        <p>Replace only the bracketed fields after an organiser approves them. Keep the game names exactly as shown unless you deliberately make a new game version between campaigns.</p>
+        <div class="copy">
+          <blockquote><p>LANDING MESSAGE</p><strong>“Play, place on the board, and join the TEDxBITSGoa side quest.”</strong></blockquote>
+          <blockquote><p>ARCADE INTRO</p><strong>“Three quick cabinets, one verified BITS Goa identity, and leaderboards that actually mean something.”</strong></blockquote>
+          <blockquote><p>ELIGIBILITY / SIGN-IN</p><strong>“Sign in with your BITS Goa Google account before starting a scoreable run.”</strong></blockquote>
+          <blockquote><p>RULES</p><strong>“Only your best verified score per game is kept. Top 10 boards are provisional until the campaign closes.”</strong></blockquote>
+          <blockquote><p>FORM CTA — FINAL TEXT</p><strong>[Insert approved CTA and form URL]</strong></blockquote>
+          <blockquote><p>FAST-TRACK / REWARD POLICY</p><strong>[Insert approved policy, tie policy, and whether a person may win across multiple boards]</strong></blockquote>
+        </div>
+      </section>
+
+      <section>
+        <h2>Required acceptance script</h2>
+        <table>
+          <thead><tr><th></th><th>Scenario</th><th>Pass condition</th></tr></thead>
+          <tbody>
+            <tr><td class="check pending">□</td><td>Unauthenticated visitor</td><td>Can view the arcade and board; cannot open a playable cabinet; sees BITS Goa sign-in.</td></tr>
+            <tr><td class="check pending">□</td><td>Allowed student</td><td>Can sign in, choose a callsign, start all three ticketed runs, and never sees their email publicly.</td></tr>
+            <tr><td class="check pending">□</td><td>PB and rank</td><td>First score appears once; a lower score preserves the PB; a higher score replaces it; rank updates after refresh.</td></tr>
+            <tr><td class="check pending">□</td><td>Ticket integrity</td><td>Refreshing/replaying a completed run cannot submit it twice; an expired ticket gets a clear retry message.</td></tr>
+            <tr><td class="check pending">□</td><td>Mobile + install</td><td>Controls are usable; no clipping at phone widths; Android offers Install and iPhone can Add to Home Screen over HTTPS.</td></tr>
+            <tr><td class="check pending">□</td><td>Accessibility</td><td>Keyboard focus is visible, buttons work by keyboard, dialogs are labelled, and reduced-motion preference does not leave required content hidden.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Known QA note</h2>
+        <p>The automated Coco Chase Pixel 7 suite is configured but was not executed on this machine: Playwright cannot locate its <code>chromium_headless_shell</code> after installation. Treat this as a local test-environment repair, then run <code>npm --prefix public/games/maze-chase run test:e2e:mobile</code> before final sign-off. This does not replace real iPhone/Android checks.</p>
+      </section>
+    </main>
+    <footer>Handoff rule: preserve the current dirty worktree, never commit secrets, and do not change live scoring or game versions during the campaign.</footer>
+  </article>
+</body>
+</html>

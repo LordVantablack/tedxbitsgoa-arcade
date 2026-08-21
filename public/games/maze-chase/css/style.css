@@ -1,4 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Bungee:wght@400&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&family=Orbitron:wght@600;800&display=swap");
+@font-face {
+  font-family: "Raster Forge";
+  src: url("/fonts/RasterForge.ttf") format("truetype");
+  font-display: swap;
+}
 
 :root {
   --bg-0: #08131d;
@@ -27,6 +31,15 @@
 html,
 body {
   min-height: 100%;
+}
+
+body,
+body button,
+body input,
+body select,
+body textarea,
+body summary {
+  font-family: "Raster Forge", "Courier New", monospace !important;
 }
 
 body {
@@ -845,4 +858,128 @@ body.landscape-mobile .action-btn {
   .touch-controls {
     gap: 8px;
   }
+}
+
+/* TEDxBITSGoa colour pass: flat colours only, with the existing control layout
+   and responsive behavior retained. */
+:root {
+  --bg-0: #071a33;
+  --bg-1: #071a33;
+  --panel: #0b2140;
+  --panel-strong: #071a33;
+  --line: #a52a22;
+  --line-strong: #e62b1e;
+  --text: #f1eee8;
+  --muted: #c8bfae;
+  --accent: #e62b1e;
+  --accent-2: #c89b3c;
+  --accent-3: #f1eee8;
+  --danger: #e62b1e;
+  --radius: 0;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: "Raster Forge", "Courier New", monospace;
+  animation: none;
+}
+
+.bg-layer { display: none; }
+.site-header, .game-shell, .settings-panel, .site-footer { animation: none; }
+.header-pill, .canvas-shell, .settings-panel, .settings-item, .header-badge,
+.header-link, .action-btn, .touch-btn, .stick-base, .keybind-btn,
+.leaderboard-output, .settings-item input[type="number"] {
+  border-radius: 0;
+  box-shadow: none;
+}
+.header-pill, .canvas-shell, .settings-panel { background: var(--panel); }
+.header-pill { border-color: var(--line); }
+.header-pill::after { display: none; }
+.identity-kicker, .header-badge, .settings-panel summary, .footer-line { color: var(--accent); }
+.title-main { color: var(--text); text-shadow: 3px 3px 0 #7f1711; }
+.header-badge { border-color: var(--line); background: #071a33; }
+.game-actions { animation: none; }
+.action-btn, .header-link {
+  border-color: #c8bfae;
+  background: #071a33;
+  color: var(--text);
+}
+.action-btn:hover, .action-btn[aria-pressed="true"], .header-link:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.canvas-shell { border-color: var(--line); }
+#canvas { border-color: #f1eee8; background: #071a33; }
+.touch-btn { border-color: var(--accent); background: #071a33; color: var(--text); }
+.touch-btn:active { background: var(--accent); color: #fff; }
+.stick-base { border-color: var(--accent); background: #071a33; }
+.stick-knob { border-color: #071a33; background: #c89b3c; }
+.settings-item, .leaderboard-output, .settings-item input[type="number"] { background: #071a33; }
+.settings-item { border-color: #a52a22; }
+.keybind-btn { border-color: #c89b3c; background: #071a33; color: #f1eee8; }
+
+/* Stage Stack-inspired type hierarchy for the shared arcade language. */
+.title-main,
+.action-btn,
+.settings-panel summary,
+.settings-item,
+.keybind-btn,
+.footer-line {
+  font-family: "Raster Forge", "Courier New", monospace;
+}
+
+.title-main { text-shadow: 3px 3px 0 #7f1711; }
+.game-actions .utility-action { display: none !important; }
+
+/* Phone-first embedded layout: maximize maze width and keep primary controls
+   reachable without changing the game canvas or its logical tile grid. */
+@media (max-width: 640px) and (hover: none), (max-width: 640px) and (pointer: coarse) {
+  body.embedded-game {
+    min-height: 100dvh;
+    padding: 4px;
+    gap: 5px;
+  }
+
+  body.embedded-game .site-header,
+  body.embedded-game .game-shell,
+  body.embedded-game .canvas-shell,
+  body.embedded-game .settings-panel {
+    width: 100%;
+  }
+
+  body.embedded-game .header-pill,
+  body.embedded-game .site-footer,
+  body.embedded-game #replay-last,
+  body.embedded-game #daily-challenge {
+    display: none;
+  }
+
+  body.embedded-game .game-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 260px);
+    margin: 0 auto;
+    gap: 5px;
+  }
+
+  body.embedded-game .action-btn {
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 4px;
+    font-size: 10px;
+  }
+
+  body.embedded-game .game-shell { gap: 5px; }
+  body.embedded-game .canvas-shell { padding: 4px; }
+  body.embedded-game #canvas { border-width: 1px; }
+
+  body.embedded-game .touch-controls {
+    --control-size: 72px;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  body.embedded-game .settings-panel summary { padding: 9px 11px; }
 }

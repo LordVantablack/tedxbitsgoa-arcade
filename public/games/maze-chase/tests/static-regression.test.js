@@ -98,7 +98,7 @@ test("pwa files exist and include offline cache", () => {
   const manifest = read("manifest.webmanifest");
   const sw = read("service-worker.js");
 
-  assert.match(manifest, /"name"\s*:\s*"PacMan"/);
+  assert.match(manifest, /"name"\s*:\s*"Coco Chase — TEDxBITSGoa Arcade"/);
   assert.match(manifest, /"display"\s*:\s*"standalone"/);
   assert.match(sw, /CACHE_VERSION/);
   assert.match(sw, /STATIC_CACHE_NAME/);

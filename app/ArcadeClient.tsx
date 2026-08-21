@@ -1,7 +1,8 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
 import { CHAMPION_TEMPLATES, DEFAULT_AVATAR, championFor, type AvatarConfig } from "../config/avatar";
 import { GAMES, type GameDefinition, type GameId } from "../config/games";
@@ -10,6 +11,7 @@ import { SiteNav } from "./SiteNav";
 
 type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig } | null;
 type LeaderboardEntry = { displayName: string; score: number; achievedAt: string };
+type ViewerScore = { score: number; rank: number } | null;
 type StartedRun = { runId: string; gameId: GameId; gameVersion: string; seed: string; startedAt: number };
 type GameMessage = {
   type: "tedx:game-over";
@@ -26,7 +28,7 @@ declare global {
       accounts: {
         id: {
           initialize(config: { client_id: string; callback: (response: { credential: string }) => void; hosted_domain?: string }): void;
-          renderButton(element: HTMLElement, options: Record<string, unknown>): void;
+          prompt(): void;
         };
       };
     };
@@ -39,23 +41,22 @@ export function ArcadeClient() {
   const [notice, setNotice] = useState("Sign in, pick a cabinet, and make your PB count.");
   const [activeGame, setActiveGame] = useState<GameDefinition | null>(null);
   const [activeRun, setActiveRun] = useState<StartedRun | null>(null);
-  const [leaderboards, setLeaderboards] = useState<Partial<Record<GameId, LeaderboardEntry[]>>>({});
+  const [viewerScores, setViewerScores] = useState<Partial<Record<GameId, ViewerScore>>>({});
   const [profileOpen, setProfileOpen] = useState(false);
   const [handle, setHandle] = useState("");
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [profileError, setProfileError] = useState("");
-  const buttonRef = useRef<HTMLDivElement>(null);
 
   const loadLeaderboards = useCallback(async () => {
     const loaded = await Promise.all(
       Object.values(GAMES).map(async (game) => {
         const response = await fetch(`/api/leaderboards/${game.id}`, { cache: "no-store" });
-        if (!response.ok) return [game.id, []] as const;
-        const data = (await response.json()) as { entries: LeaderboardEntry[] };
-        return [game.id, data.entries] as const;
+        if (!response.ok) return [game.id, { entries: [], viewer: null }] as const;
+        const data = (await response.json()) as { entries: LeaderboardEntry[]; viewer?: ViewerScore };
+        return [game.id, data] as const;
       }),
     );
-    setLeaderboards(Object.fromEntries(loaded) as Partial<Record<GameId, LeaderboardEntry[]>>);
+    setViewerScores(Object.fromEntries(loaded.map(([gameId, data]) => [gameId, data.viewer ?? null])) as Partial<Record<GameId, ViewerScore>>);
   }, []);
 
   const onCredential = useCallback(async (credential: string) => {
@@ -78,7 +79,8 @@ export function ArcadeClient() {
     }
     if (me.player && !me.player.handle) setProfileOpen(true);
     setNotice(`You’re in, ${data.player.displayName.split(" ")[0]}. Pick a callsign before your first qualifying run.`);
-  }, []);
+    void loadLeaderboards();
+  }, [loadLeaderboards]);
 
   useEffect(() => {
     void fetch("/api/me", { cache: "no-store" })
@@ -98,7 +100,7 @@ export function ArcadeClient() {
   }, [loadLeaderboards]);
 
   useEffect(() => {
-    if (!buttonRef.current || player) return;
+    if (player) return;
     let disposed = false;
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -107,19 +109,15 @@ export function ArcadeClient() {
     script.onload = async () => {
       const response = await fetch("/api/auth/config", { cache: "no-store" });
       const { googleClientId } = (await response.json()) as { googleClientId: string | null };
-      if (disposed || !googleClientId || !window.google || !buttonRef.current) return;
+      if (disposed || !googleClientId || !window.google) return;
       window.google.accounts.id.initialize({
         client_id: googleClientId,
         hosted_domain: CAMPAIGN.allowedGoogleWorkspaceDomain,
         callback: ({ credential }) => void onCredential(credential),
       });
-      window.google.accounts.id.renderButton(buttonRef.current, {
-        theme: "outline",
-        size: "large",
-        text: "continue_with",
-        shape: "pill",
-        width: 280,
-      });
+      if (new URLSearchParams(window.location.search).get("setup") === "profile") {
+        window.google.accounts.id.prompt();
+      }
     };
     document.head.appendChild(script);
     return () => {
@@ -202,12 +200,6 @@ export function ArcadeClient() {
     setNotice(`${game.title} is live. Finish the run to send your score for verification.`);
   }
 
-  function launchDemo(game: GameDefinition) {
-    setActiveRun(null);
-    setActiveGame(game);
-    setNotice(`${game.title} demo mode — have a go. Sign in to submit a qualifying score.`);
-  }
-
   async function saveProfile() {
     const response = await fetch("/api/profile", {
       method: "POST",
@@ -234,13 +226,29 @@ export function ArcadeClient() {
     setNotice("Signed out. Your verified scores remain safely attached to your account.");
   }
 
+  function openGoogleSignIn() {
+    if (!window.google) {
+      setNotice("Sign-in is still loading. Please try again in a moment.");
+      return;
+    }
+    window.google.accounts.id.prompt();
+  }
+
+  function requestScoreRun(game: GameDefinition) {
+    if (!player) {
+      openGoogleSignIn();
+      return;
+    }
+    void launchGame(game);
+  }
+
   return (
     <main className="arcade-shell experience">
       <div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}</div>
       <SiteNav active="arcade" slot={<div className="identity" id="login">
           {loadingIdentity ? <span className="quiet">Checking access…</span> : player ? (
             <><button onClick={() => setProfileOpen(true)} className="profile-link">{player.handle ?? player.displayName}</button><button onClick={() => void logout()} className="text-button">Sign out</button></>
-          ) : <div ref={buttonRef} aria-label="Sign in with Google" />}
+          ) : <span className="quiet">SIGN IN BELOW</span>}
         </div>} />
 
       <section className="hero" id="top"><p className="eyebrow">ARCADE / SELECT A CABINET</p><h1>ONE MORE<br /><i>RUN.</i></h1>
@@ -250,15 +258,28 @@ export function ArcadeClient() {
 
       <section className="cabinet-grid" aria-label="Games">
         {Object.values(GAMES).map((game, index) => (
-          <article className={`cabinet cabinet-${index + 1}`} key={game.id}>
-            <p className="cabinet-index">0{index + 1}</p>
-            <h2>{game.title}</h2>
-            <p>{game.shortDescription}</p>
-            <p className="control-hint">{game.controlHint}</p>
-            <div className="game-preview"><img src={game.previewImage} alt="" /></div><button className="play-button" onClick={() => void launchGame(game)}>Play for score</button><button className="demo-button" onClick={() => launchDemo(game)}>Try a demo</button>
-            <Leaderboard entries={leaderboards[game.id] ?? []} label={game.scoreLabel} />
+          <article className="arcade-machine" key={game.id}>
+            <div className="arcade-machine__visual">
+              <button className="arcade-machine__screen" type="button" onClick={() => requestScoreRun(game)} aria-label={`${player ? "Start score run for" : "Sign in to play"} ${game.title}`}>
+                <img src={game.previewImage} alt="" />
+                <span className="arcade-machine__screen-shade" aria-hidden="true" />
+                <span className="arcade-machine__screen-logo" aria-hidden="true">{cabinetWordmark(game.id)}</span>
+                <span className="arcade-machine__screen-prompt" aria-hidden="true">{player ? "SCORE RUN" : "SIGN IN TO PLAY"}</span>
+              </button>
+              <span className="arcade-machine__marquee" aria-hidden="true">{cabinetWordmark(game.id)}</span>
+              <img className="arcade-machine__shell" src={cabinetShell(game.id)} alt="" aria-hidden="true" />
+            </div>
+            <div className="arcade-machine__actions">
+              <button type="button" onClick={() => requestScoreRun(game)}>{player ? "SCORE RUN" : "SIGN IN TO PLAY"}</button>
+            </div>
+            <p className="arcade-machine__rank" aria-live="polite">0{index + 1} · {leaderboardPlaque(player, viewerScores[game.id] ?? null)}</p>
           </article>
         ))}
+      </section>
+
+      <section className="arcade-group-actions" aria-label="Arcade account and leaderboard actions">
+        {player ? <button className="control-tile is-selected" onClick={() => setProfileOpen(true)}><i aria-hidden="true">▶</i><b>SIGNED IN AS {player.handle ?? player.displayName}</b></button> : <button className="control-tile is-selected" onClick={openGoogleSignIn}><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></button>}
+        <Link className="control-tile" href="/leaderboard"><i aria-hidden="true">▶</i><b>CHECK LEADERBOARD</b></Link>
       </section>
 
       <section className="rules">
@@ -269,12 +290,12 @@ export function ArcadeClient() {
       {activeGame ? (
         <div className="game-modal" role="dialog" aria-modal="true" aria-label={`${activeGame.title} game`}>
           <div className="game-modal-bar">
-            <div><strong>{activeGame.title}</strong><span>{activeRun ? "Scoreable run active" : "Run complete"}</span></div>
+            <div><strong>{activeGame.title}</strong><span>Scoreable run active</span></div>
             <button className="text-button" onClick={() => setActiveGame(null)}>Close cabinet</button>
           </div>
           <iframe
             title={activeGame.title}
-            src={`${activeGame.embedPath}&run=${encodeURIComponent(activeRun?.runId ?? "preview")}&seed=${encodeURIComponent(activeRun?.seed ?? "")}`}
+            src={`${activeGame.embedPath}&run=${encodeURIComponent(activeRun?.runId ?? "preview")}&seed=${encodeURIComponent(activeRun?.seed ?? "")}&pb=${encodeURIComponent(String(viewerScores[activeGame.id]?.score ?? 0))}`}
             className="game-frame"
             allow="fullscreen"
           />
@@ -296,15 +317,23 @@ function AvatarPreview({ avatar }: { avatar: AvatarConfig }) {
 }
 
 function ChampionSprite({ champion }: { champion: ReturnType<typeof championFor> }) {
-  return <span className="champion-sprite" style={{ backgroundPosition: champion.spritePosition }} aria-hidden="true" />;
+  return <span className="champion-sprite" style={{ backgroundImage: `url(${champion.spriteSrc})` }} aria-hidden="true" />;
 }
 
-function Leaderboard({ entries, label }: { entries: LeaderboardEntry[]; label: string }) {
-  return (
-    <ol className="leaderboard" aria-label={`Top scores by ${label}`}>
-      {entries.length ? entries.map((entry, index) => (
-        <li key={`${entry.displayName}-${entry.achievedAt}`}><span>{index + 1}. {entry.displayName}</span><b>{entry.score}</b></li>
-      )) : <li className="quiet">The board is waiting for a first score.</li>}
-    </ol>
-  );
+function cabinetWordmark(gameId: GameId) {
+  return { "deadline-dash": "SOBER PARHAWK", "stage-stack": "B-DOME STACK", "maze-chase": "COCO CHASE" }[gameId];
+}
+
+function cabinetShell(gameId: GameId) {
+  return {
+    "deadline-dash": "/media/arcade-cabinets/deadline-dash-shell.png",
+    "stage-stack": "/media/arcade-cabinets/stage-stack-shell.png",
+    "maze-chase": "/media/arcade-cabinets/idea-circuit-shell.png",
+  }[gameId];
+}
+
+function leaderboardPlaque(player: Player, personalBest: ViewerScore) {
+  if (!player) return "SIGN IN TO TRACK YOUR RANK";
+  if (!player.handle) return "CHOOSE A CALLSIGN TO TRACK YOUR RANK";
+  return personalBest ? `PB ${personalBest.score} · YOU ARE #${personalBest.rank}` : "NO VERIFIED PB YET";
 }

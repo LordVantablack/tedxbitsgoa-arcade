@@ -42,7 +42,8 @@ export const hookAction = (instance, engine, time) => {
 export const hookPainter = (instance, engine) => {
   const { ctx } = engine
   const ropeHeight = engine.getVariable(constant.ropeHeight)
-  const ropeWidth = ropeHeight * 0.1
+  // Preserve the supplied hook sprite's 260×840 aspect ratio.
+  const ropeWidth = ropeHeight * (260 / 840)
   const hook = engine.getImg('hook')
   ctx.save()
   ctx.translate(instance.x, instance.y)
@@ -51,4 +52,3 @@ export const hookPainter = (instance, engine) => {
   engine.ctx.drawImage(hook, instance.x - (ropeWidth / 2), instance.y, ropeWidth, ropeHeight + 5)
   ctx.restore()
 }
-

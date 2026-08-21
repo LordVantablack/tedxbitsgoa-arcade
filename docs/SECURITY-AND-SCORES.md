@@ -24,8 +24,8 @@ therefore **provisional** and should be reviewed before fast-tracking anyone.
 
 | Game | Server checks | Evidence retained with a PB |
 | --- | --- | --- |
-| Deadline Dash | Score rate and jump count are plausible for duration | Jump count and final distance |
-| Stage Stack | Recomputes score from success/perfect-placement sequence; max three misses | Placement sequence and misses |
+| Stage Flight | Gate score and flap count are plausible for duration | Flap count and cleared gates |
+| Stage Stack | Recomputes score from success/perfect-placement sequence; server accepts up to three misses, while the arcade presentation ends a run on the first miss | Placement sequence and misses |
 | Maze Chase | Score, level, input volume, and duration are within conservative bounds | Seeded input replay when available |
 
 ## Organiser policy
