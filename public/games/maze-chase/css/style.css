@@ -684,16 +684,6 @@ body.one-handed .touch-controls {
   margin-right: 0;
 }
 
-body.landscape-mobile .game-actions {
-  gap: 5px;
-}
-
-body.landscape-mobile .action-btn {
-  min-width: 82px;
-  padding: 7px 9px;
-  font-size: 11px;
-}
-
 @keyframes enter-down {
   from {
     opacity: 0;
@@ -1012,25 +1002,5 @@ body {
 
   body.embedded-game #canvas {
     border-width: 1px;
-  }
-}
-
-@media (max-width: 900px) and (pointer: coarse) and (orientation: portrait) {
-  body.embedded-game::before {
-    content: "ROTATE PHONE SIDEWAYS FOR A BIGGER MAZE";
-    position: fixed;
-    left: 50%;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 4;
-    transform: translateX(-50%);
-    padding: 5px 7px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(5, 5, 5, 0.72);
-    color: #f1eee8;
-    font-family: "Raster Forge", "Courier New", monospace;
-    font-size: 8px;
-    letter-spacing: 0.04em;
-    text-align: center;
-    pointer-events: none;
   }
 }

@@ -1498,9 +1498,6 @@ function applyAccessibilitySettings() {
   document.body.classList.toggle("large-hud", settings.largeHud);
   document.body.classList.toggle("one-handed", settings.oneHandedMode);
 
-  const coarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const landscapeMobile = coarsePointer && window.innerWidth > window.innerHeight;
-  document.body.classList.toggle("landscape-mobile", landscapeMobile);
 }
 
 function renderArcadeViewButton() {
