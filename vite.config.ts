@@ -9,6 +9,11 @@ const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
 const { d1, r2 } = hostingConfig;
 const d1DatabaseName = process.env.CLOUDFLARE_D1_DATABASE_NAME ?? "site-creator-d1";
 const d1DatabaseId = process.env.CLOUDFLARE_D1_DATABASE_ID ?? SITE_CREATOR_PLACEHOLDER_DATABASE_ID;
+const runtimeVars = Object.fromEntries(
+  ["GOOGLE_CLIENT_ID", "SESSION_SECRET", "ADMIN_EMAILS"]
+    .map((key) => [key, process.env[key]])
+    .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].length > 0),
+);
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
@@ -16,6 +21,7 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  vars: runtimeVars,
   d1_databases: d1
     ? [
         {
