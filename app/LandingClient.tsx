@@ -4,12 +4,8 @@ import Link from "next/link";
 import { KeyboardEvent, useRef, useState } from "react";
 import { CAMPAIGN } from "../config/campaign";
 import { THEME } from "../config/theme";
-import { SiteNav } from "./SiteNav";
 
 export function LandingClient() {
-  const [bgm, setBgm] = useState(38);
-  const [sfx, setSfx] = useState(72);
-  const [soundOn, setSoundOn] = useState(true);
   const [activeControl, setActiveControl] = useState(1);
   const controlRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
@@ -32,26 +28,29 @@ export function LandingClient() {
       <div className="ambient" aria-hidden="true">
         {THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}
       </div>
-      <SiteNav active="home" />
+      <header className="landing-brand-header">
+        <Link href="/" className="landing-brand-box" aria-label="TEDxBITSGoa Arcade home">
+          <img className="landing-brand-ribbon-image" src="/media/tedxbitsgoa-hero-ribbon.png" alt="" />
+        </Link>
+      </header>
       <section className="landing-hero landing-hero--arcade">
         <div className="hero-grid">
           <div className="hero-console">
-            <p className="landing-kicker">TEDxBITSGoa / ARCADE MODE</p>
-            <h1 className="pixel-title">IDEAS<br /><em>IN PLAY.</em></h1>
-            <p className="landing-copy">The TEDxBITSGoa universe is loading. Choose your next move, meet the team, and enter the arcade.</p>
+            <Link href="/avatar" className="profile-poster" aria-label="Create your TEDxBITSGoa player profile">
+              <span aria-hidden="true">?</span>
+            </Link>
+            <p className="landing-copy">The TEDxBITSGoa universe is loading. Choose your next move, meet the team, and enter the arcade. <small>AVATAR</small></p>
+          </div>
+          <div className="hero-actions-panel">
             <p className="control-hint">USE ↑ ↓ TO SELECT // ENTER TO OPEN</p>
             <nav className="control-wall" aria-label="Arcade controls">
               <a ref={(element) => { controlRefs.current[0] = element; }} onFocus={() => setActiveControl(0)} onMouseEnter={() => setActiveControl(0)} onKeyDown={(event) => moveControlFocus(event, 0)} className={`control-tile ${activeControl === 0 ? "is-selected" : ""}`} href={THEME.instagramUrl} target="_blank" rel="noreferrer"><i aria-hidden="true">▶</i><b>INSTAGRAM</b></a>
               <Link ref={(element) => { controlRefs.current[1] = element; }} onFocus={() => setActiveControl(1)} onMouseEnter={() => setActiveControl(1)} onKeyDown={(event) => moveControlFocus(event, 1)} className={`control-tile ${activeControl === 1 ? "is-selected" : ""}`} href="/arcade"><i aria-hidden="true">▶</i><b>ENTER ARCADE</b></Link>
               <Link ref={(element) => { controlRefs.current[2] = element; }} onFocus={() => setActiveControl(2)} onMouseEnter={() => setActiveControl(2)} onKeyDown={(event) => moveControlFocus(event, 2)} className={`control-tile ${activeControl === 2 ? "is-selected" : ""}`} href="/arcade#login"><i aria-hidden="true">▶</i><b>SIGN IN</b></Link>
-              <Link ref={(element) => { controlRefs.current[3] = element; }} onFocus={() => setActiveControl(3)} onMouseEnter={() => setActiveControl(3)} onKeyDown={(event) => moveControlFocus(event, 3)} className={`control-tile ${activeControl === 3 ? "is-selected" : ""}`} href="/avatar"><i aria-hidden="true">▶</i><b>PROFILE STUDIO</b></Link>
-              <a ref={(element) => { controlRefs.current[4] = element; }} onFocus={() => setActiveControl(4)} onMouseEnter={() => setActiveControl(4)} onKeyDown={(event) => moveControlFocus(event, 4)} className={`control-tile ${activeControl === 4 ? "is-selected" : ""}`} href={CAMPAIGN.registrationUrl || "#apply"} target={CAMPAIGN.registrationUrl ? "_blank" : undefined} rel="noreferrer"><i aria-hidden="true">▶</i><b>APPLY TO TEDx</b></a>
+              <Link ref={(element) => { controlRefs.current[3] = element; }} onFocus={() => setActiveControl(3)} onMouseEnter={() => setActiveControl(3)} onKeyDown={(event) => moveControlFocus(event, 3)} className={`control-tile ${activeControl === 3 ? "is-selected" : ""}`} href="/leaderboard"><i aria-hidden="true">▶</i><b>LEADERBOARD</b></Link>
+              <Link ref={(element) => { controlRefs.current[4] = element; }} onFocus={() => setActiveControl(4)} onMouseEnter={() => setActiveControl(4)} onKeyDown={(event) => moveControlFocus(event, 4)} className={`control-tile ${activeControl === 4 ? "is-selected" : ""}`} href="/avatar"><i aria-hidden="true">▶</i><b>PROFILE STUDIO</b></Link>
+              <a ref={(element) => { controlRefs.current[5] = element; }} onFocus={() => setActiveControl(5)} onMouseEnter={() => setActiveControl(5)} onKeyDown={(event) => moveControlFocus(event, 5)} className={`control-tile ${activeControl === 5 ? "is-selected" : ""}`} href={CAMPAIGN.registrationUrl || "#apply"} target={CAMPAIGN.registrationUrl ? "_blank" : undefined} rel="noreferrer"><i aria-hidden="true">▶</i><b>APPLY TO TEDx</b></a>
             </nav>
-            <div className="audio-deck" aria-label="Music controls">
-              <div className="audio-deck__head"><span>AUDIO DECK</span><button type="button" aria-pressed={soundOn} onClick={() => setSoundOn((value) => !value)}>{soundOn ? "SOUND ON" : "SOUND OFF"}</button></div>
-              <label><span>BGM</span><input type="range" min="0" max="100" value={soundOn ? bgm : 0} onChange={(event) => setBgm(Number(event.target.value))} aria-label="Background music volume" /></label>
-              <label><span>SFX</span><input type="range" min="0" max="100" value={soundOn ? sfx : 0} onChange={(event) => setSfx(Number(event.target.value))} aria-label="Sound effects volume" /></label>
-            </div>
           </div>
           <aside className="hero-media" aria-label="TEDxBITSGoa campaign media">
             <figure className="campaign-poster">

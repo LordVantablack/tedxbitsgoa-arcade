@@ -9,6 +9,36 @@ import {
 import { addFlight } from './flight'
 import * as constant from './constant'
 
+const drawPixelHeart = (ctx, x, y, size, inactive) => {
+  const pixel = Math.max(2, Math.floor(size / 11))
+  const shape = [
+    [1, 0], [2, 0], [4, 0], [5, 0],
+    [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],
+    [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2],
+    [1, 3], [2, 3], [3, 3], [4, 3],
+    [2, 4], [3, 4], [2, 5]
+  ]
+  const hasPixel = (column, row) => shape.some(([xPos, yPos]) => xPos === column && yPos === row)
+  ctx.save()
+  ctx.globalAlpha = inactive ? 0.28 : 1
+  ctx.fillStyle = '#1d253b'
+  shape.forEach(([column, row]) => {
+    for (let xOffset = -1; xOffset <= 1; xOffset += 1) {
+      for (let yOffset = -1; yOffset <= 1; yOffset += 1) {
+        if (!hasPixel(column + xOffset, row + yOffset)) ctx.fillRect(x + ((column + xOffset) * pixel), y + ((row + yOffset) * pixel), pixel, pixel)
+      }
+    }
+  })
+  ctx.fillStyle = '#e62b1e'
+  shape.forEach(([column, row]) => {
+    ctx.fillRect(x + (column * pixel), y + (row * pixel), pixel, pixel)
+  })
+  ctx.fillStyle = '#ff7868'
+  ctx.fillRect(x + pixel, y + pixel, pixel, pixel)
+  ctx.fillRect(x + (pixel * 2), y + pixel, pixel, pixel)
+  ctx.restore()
+}
+
 export const endAnimate = (engine) => {
   const gameStartNow = engine.getVariable(constant.gameStartNow)
   if (!gameStartNow) return
@@ -18,60 +48,32 @@ export const endAnimate = (engine) => {
   const threeFiguresOffset = Number(successCount) > 99 ? engine.width * 0.1 : 0
 
   drawYellowString(engine, {
-    string: 'floor',
-    size: engine.width * 0.06,
-    x: (engine.width * 0.24) + threeFiguresOffset,
-    y: engine.width * 0.12,
+    string: 'FLOOR',
+    size: engine.width * 0.05,
+    x: (engine.width * 0.2) + threeFiguresOffset,
+    y: engine.width * 0.1,
     textAlign: 'left',
-    fontName: 'Arial',
+    fontName: 'RasterForge',
     fontWeight: 'bold'
   })
   drawYellowString(engine, {
     string: successCount,
-    size: engine.width * 0.17,
-    x: (engine.width * 0.22) + threeFiguresOffset,
-    y: engine.width * 0.2,
+    size: engine.width * 0.13,
+    x: (engine.width * 0.19) + threeFiguresOffset,
+    y: engine.width * 0.16,
     textAlign: 'right'
   })
-  const score = engine.getImg('score')
-  const scoreWidth = score.width
-  const scoreHeight = score.height
-  const zoomedWidth = engine.width * 0.35
-  const zoomedHeight = (scoreHeight * zoomedWidth) / scoreWidth
-  engine.ctx.drawImage(
-    score,
-    engine.width * 0.61,
-    engine.width * 0.038,
-    zoomedWidth,
-    zoomedHeight
-  )
+  drawYellowString(engine, { string: 'SCORE', size: engine.width * 0.042, x: engine.width * 0.9, y: engine.width * 0.18, textAlign: 'right', fontName: 'RasterForge', fontWeight: 'bold' })
   drawYellowString(engine, {
     string: gameScore,
-    size: engine.width * 0.06,
+    size: engine.width * 0.052,
     x: engine.width * 0.9,
-    y: engine.width * 0.11,
+    y: engine.width * 0.235,
     textAlign: 'right'
   })
   const { ctx } = engine
-  const heart = engine.getImg('heart')
-  const heartWidth = heart.width
-  const heartHeight = heart.height
-  const zoomedHeartWidth = engine.width * 0.08
-  const zoomedHeartHeight = (heartHeight * zoomedHeartWidth) / heartWidth
-  for (let i = 1; i <= 3; i += 1) {
-    ctx.save()
-    if (i <= failedCount) {
-      ctx.globalAlpha = 0.2
-    }
-    ctx.drawImage(
-      heart,
-      (engine.width * 0.66) + ((i - 1) * zoomedHeartWidth),
-      engine.width * 0.16,
-      zoomedHeartWidth,
-      zoomedHeartHeight
-    )
-    ctx.restore()
-  }
+  const zoomedHeartWidth = engine.width * 0.085
+  drawPixelHeart(ctx, engine.width * 0.82, engine.width * 0.27, zoomedHeartWidth, failedCount >= 1)
 }
 
 export const startAnimate = (engine) => {
@@ -123,4 +125,3 @@ export const startAnimate = (engine) => {
       break
   }
 }
-

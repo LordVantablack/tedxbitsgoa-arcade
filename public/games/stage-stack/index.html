@@ -1,141 +1,52 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,minimal-ui"><title>Tower Building</title><link rel="icon" type="image/x-icon" href="./assets/favicon.png"><style>*{margin:0;padding:0}img{width:100%}html{background:#fff;height:100%}body{font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;margin:0 auto;text-align:center;width:100%;height:100%;background:#f95240 url(assets/main-bg.png)}@media screen and (min-height:560px){html{font-size:100px}}@media screen and (min-height:640px){html{font-size:112.5px}}@media screen and (min-height:720px){html{font-size:125px}}@media screen and (min-height:800px){html{font-size:137.5px}}@media screen and (min-height:880px){html{font-size:150px}}@media screen and (min-height:960px){html{font-size:162.5px}}@media screen and (min-height:1040px){html{font-size:180px}}@media screen and (min-height:1200px){html{font-size:200px}}html{font-size:17.6vh}#canvas{position:fixed;left:0;top:0;right:0;bottom:0;margin:auto}a{text-decoration:none}li,ol,ul{list-style-type:none;padding:0;margin:0}.hide{display:none}.clear{clear:both}.loading{background-color:#f05a50;height:100%;width:100%}.loading .main{width:60%;margin:0 auto;color:#fff}.loading .main img{width:60%;margin:1rem auto 0}.loading .main .title{font-size:.3rem}.loading .main .text{font-size:.15rem}.loading .main .bar{height:.12rem;width:100%;border:3px solid #fff;border-radius:.6rem;margin:.1rem 0}.loading .main .bar .sub{height:.1rem;width:98%;margin:.008rem auto 0}.loading .main .bar .percent{height:100%;width:0;background-color:#fff;border-radius:.6rem}.loading .logo{position:absolute;bottom:.3rem;left:0;right:0}.loading .logo img{width:1rem}.content{height:100vh;margin:0 auto;position:relative}.landing .title{width:60%}.landing .logo{width:30%;position:absolute;right:.2rem;top:.2rem}.landing .action-2{position:absolute;bottom:.2rem;width:100%}.landing .start{width:65%}.slideTop{-webkit-animation:st 1s ease-in-out;animation:st 1s ease-in-out}@-webkit-keyframes st{0%{transform:translateZ(0)}100%{transform:translate3d(0,-100%,0)}}@keyframes st{0%{transform:translateZ(0)}100%{transform:translate3d(0,-100%,0)}}.slideBottom{-webkit-animation:sb 1s ease-in-out;animation:sb 1s ease-in-out}@-webkit-keyframes sb{0%{transform:translateZ(0)}100%{transform:translate3d(0,200%,0)}}@keyframes sb{0%{transform:translateZ(0)}100%{transform:translate3d(0,200%,0)}}.swing{-webkit-animation:sw 2s ease-in-out alternate infinite;animation:sw 2s ease-in-out alternate infinite}@-webkit-keyframes sw{0%{transform:rotate(5deg);transform-origin:top center}100%{transform:rotate(-5deg);transform-origin:top center}}@keyframes sw{0%{transform:rotate(5deg);transform-origin:top center}100%{transform:rotate(-5deg);transform-origin:top center}}.modal .mask{background-color:#000;opacity:.6;position:fixed;height:100%;width:100%;top:0;left:0}.modal .modal-content{position:fixed;height:100%;width:90%;margin-top:.3rem;top:0}.modal .main{width:85%;margin:0 auto}.modal .container{position:relative}.modal .bg{width:100%;position:absolute;top:0;left:0}.modal .modal-main{width:100%;position:absolute;top:0;left:0;margin-top:-.4rem}.modal .over-img{width:80%;margin:.8rem auto 0}.modal .over-score{margin-top:-.2rem;font-size:.5rem;color:#ff735c;text-shadow:-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff,2px 2px 0 #fff}.modal .tip{font-size:.16rem;color:#9b724e}.modal .over-button-b{width:70%;margin:.1rem auto 0}.wxShare{background:#000;position:absolute;top:0;left:0;width:100%;height:100%;z-index:11;opacity:.9}.wxShare img{width:50%;float:right;margin:10px 10px 0 0}@font-face{font-family:wenxue;src:url(assets/wenxue.eot);src:url(assets/wenxue.eot),url(assets/wenxue.woff),url(assets/wenxue.ttf),url(assets/wenxue.svg)}.font-wenxue{font-family:wenxue}</style></head><body><canvas id="canvas" class="hide"></canvas><div class="content"><div class="loading"><div class="main"><img src="./assets/main-loading.gif"><div class="progress"><div class="title font-wenxue">0%</div><div class="bar"><div class="sub"><div class="percent"></div></div></div><div class="text">Loading...</div></div></div></div><div class="landing hide"><div class="action-1"><img src="./assets/main-index-title.png" class="title swing"></div><div class="action-2"><img id="start" src="./assets/main-index-start.png" class="start"></div></div><div id="modal" class="modal hide"><div class="mask"></div><div class="js-modal-content modal-content"><div class="main"><div class="container"><img src="./assets/main-modal-bg.png" class="bg"><div class="modal-main"><div id="over-modal" class="hide js-modal-card"><img src="./assets/main-modal-over.png" class="over-img"><div id="score" class="over-score font-wenxue"></div><div id="over-zero" class="hide"><div class="tip"><p>Try Again!</p><img src="./assets/main-modal-again-b.png" class="over-button-b js-reload"><img src="./assets/main-modal-invite-b.png" class="over-button-b js-invite"></div></div></div></div></div></div></div></div><div class="wxShare hide"><img src="./assets/main-share-icon.png"></div></div><script src="./dist/main.js"></script><script src="./assets/zepto-1.1.6.min.js"></script><script>var domReady, loadFinish, canvasReady, loadError, gameStart, game, score, successCount
-  // init window height and width
-  var gameWidth = window.innerWidth
-  var gameHeight = window.innerHeight
-  var ratio = 1.5
-  if (gameHeight / gameWidth < ratio) {
-    gameWidth = Math.ceil(gameHeight / ratio)
-  }
-  $('.content').css({ "height": gameHeight + "px", "width": gameWidth + "px" })
-  $('.js-modal-content').css({ "width": gameWidth + "px" })
-
-  // loading animation
-  function hideLoading() {
-    if (domReady && canvasReady) {
-      $('#canvas').show()
-      loadFinish = true
-      setTimeout(function () {
-        $('.loading').hide()
-        $('.landing').show()
-      }, 1000)
-    }
-  }
-
-  function updateLoading(status) {
-    var success = status.success
-    var total = status.total
-    var failed = status.failed
-    if (failed > 0 && !loadError) {
-      loadError = true
-      alert('Network error... Please try again.')
-      return
-    }
-    var percent = parseInt((success / total) * 100);
-    if (percent === 100 && !canvasReady) {
-      canvasReady = true
-      hideLoading()
-    }
-    percent = percent > 98 ? 98 : percent
-    percent = percent + '%'
-    $('.loading .title').text(percent);
-    $('.loading .percent').css({
-      'width': percent
-    })
-  }
-
-  var tedxRunStartedAt = 0
-  var tedxPlacementEvents = []
-
-  function overShowOver() {
-    $('#modal').show()
-    $('#over-modal').show()
-    $('#over-zero').show()
-  }
-
-  // game customization options
-  const option = {
-    width: gameWidth,
-    height: gameHeight,
-    canvasId: 'canvas',
-    soundOn: true,
-    setGameScore: function (s) {
-      var previous = score || 0
-      score = s
-      tedxPlacementEvents.push({ perfect: (s - previous) > 25 })
-    },
-    setGameSuccess: function (s) {
-      successCount = s
-    },
-    setGameFailed: function (f) {
-      $('#score').text(score)
-      if (f >= 3) {
-        overShowOver()
-        if (window.parent !== window && tedxRunStartedAt) {
-          window.parent.postMessage({
-            type: 'tedx:game-over',
-            gameId: 'stage-stack',
-            score: score || 0,
-            durationMs: Date.now() - tedxRunStartedAt,
-            metadata: { placements: tedxPlacementEvents, misses: f },
-            evidence: { placements: tedxPlacementEvents, misses: f }
-          }, window.location.origin)
-        }
-      }
-    }
-  }
-
-  // game init with option
-  function gameReady() {
-    game = TowerGame(option)
-    game.load(function () {
-      game.init()
-      setTimeout(function () {
-        game.playBgm()
-      })
-    }, updateLoading)
-  }
-
-  var isWechat = navigator.userAgent.toLowerCase().indexOf("micromessenger") !== -1
-  if (isWechat) {
-    document.addEventListener("WeixinJSBridgeReady", gameReady, false)
-  } else {
-    gameReady()
-  }
-
-  function indexHide() {
-    $('.landing .action-1').addClass('slideTop')
-    $('.landing .action-2').addClass('slideBottom')
-    setTimeout(function () {
-      $('.landing').hide()
-    }, 950)
-  }
-
-  // click event
-  $('#start').on('click', function () {
-    if (gameStart) return
-    gameStart = true
-    tedxRunStartedAt = Date.now()
-    setTimeout(function () {
-      game.playBgm()
-    })
-    indexHide()
-    setTimeout(game.start, 400)
-  })
-
-  $('.js-reload').on('click', function () {
-    window.location.href = window.location.href + '?s=' + (+new Date())
-  })
-
-  $('.js-invite').on('click', function () {
-    $('.wxShare').show()
-  })
-
-  $('.wxShare').on('click', function () {
-    $('.wxShare').hide()
-  })
-
-  // listener
-  window.addEventListener('load', function () {
-    domReady = true
-    hideLoading()
-  }, false);</script><script async src="https://www.googletagmanager.com/gtag/js?id=G-YCWZ8ZDCH2"></script><script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-YCWZ8ZDCH2")</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#86a6ed">
+  <title>B-Dome Stack — TEDxBITSGoa Arcade</title>
+  <link rel="icon" href="./assets/tedx-stage-favicon.svg" type="image/svg+xml">
+  <style>
+    @font-face{font-family:RasterForge;src:url('../../fonts/RasterForge.ttf') format('truetype');font-display:swap}
+    :root{--ink:#1d253b;--cream:#fff0d5;--red:#e62b1e;--gold:#d19a39;--sky:#86a6ed}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:var(--sky)}body{overflow:hidden;font-family:RasterForge,monospace;color:var(--cream)}button{font:inherit}.stage-stack{position:relative;width:min(100vw,62.5dvh);height:min(160vw,100dvh);min-height:430px;margin:auto;overflow:hidden;background:#86a6ed;border-inline:4px solid var(--ink)}#canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}.frame{position:absolute;inset:0;z-index:2;pointer-events:none;border:5px solid var(--cream);outline:5px solid var(--red);outline-offset:-14px}.frame::before,.frame::after{content:'';position:absolute;width:14px;height:14px;background:var(--gold);box-shadow:0 0 0 3px var(--ink)}.frame::before{top:9px;left:9px}.frame::after{right:9px;bottom:9px}.screen{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:26px 20px}.screen[hidden]{display:none}.panel{position:relative;width:min(100%,370px);padding:24px 20px;border:4px solid var(--ink);background:#fff0d5;box-shadow:8px 8px 0 var(--red);text-align:center;color:var(--ink)}.eyebrow{margin:0 0 9px;color:var(--red);font-size:11px;letter-spacing:.08em;text-transform:uppercase}h1,h2,p{margin:0}h1,h2{text-transform:uppercase;line-height:.9;letter-spacing:.02em;text-shadow:3px 3px 0 var(--cream),6px 6px 0 var(--ink)}h1{font-size:clamp(39px,11vw,57px)}h2{font-size:clamp(33px,9vw,48px)}h1 span,h2 span{color:var(--red)}.copy{max-width:28ch;margin:17px auto;font-family:Arial,sans-serif;font-size:14px;line-height:1.4}.arcade-button{width:100%;min-height:53px;border:3px solid var(--ink);background:var(--red);color:var(--cream);cursor:pointer;box-shadow:4px 4px 0 var(--ink);letter-spacing:.06em;text-transform:uppercase}.arcade-button:hover,.arcade-button:focus-visible{background:#b9231a;outline:3px solid var(--gold);outline-offset:3px}.arcade-button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}.controls{display:flex;justify-content:center;gap:11px;margin-top:14px;font-size:10px;letter-spacing:.04em;text-transform:uppercase}.controls kbd{padding:3px 5px;border:2px solid var(--ink);background:var(--cream)}.loading{z-index:1;background:#86a6ed url('./assets/main-bg.png') center/cover no-repeat}.loading .loading-crane{width:52%;height:45%;object-fit:contain;object-position:center bottom;animation:loading-sway 1.1s steps(3,end) infinite}.loading .loading-building{position:absolute;width:45%;bottom:16%;animation:loading-drop 1.1s steps(6,end) infinite}.loading .loading-copy{position:absolute;bottom:7%;left:0;right:0;text-align:center;color:var(--ink);font-size:13px;text-shadow:2px 2px 0 var(--cream)}.loading.awaiting .loading-copy{visibility:hidden}.intro{background:transparent}.intro .panel{position:static;width:100%;height:100%;padding:0;border:0;background:transparent;box-shadow:none;color:var(--ink)}.intro .eyebrow{position:absolute;top:5%;left:0;right:0}.intro h1{position:absolute;top:8%;left:0;right:0}.intro .copy{display:none}.hero-action{display:grid;grid-template-columns:1fr max-content 1fr;align-items:center;gap:10px;width:min(82%,290px);min-height:38px;padding:0;border:0;background:transparent;color:var(--red);cursor:pointer;font-family:RasterForge,monospace;font-size:clamp(1rem,3.7vw,1.3rem);letter-spacing:.06em;text-transform:uppercase;text-shadow:2px 2px 0 var(--ink);transition:transform .1s ease,color .1s ease}.hero-action i,.hero-action span{color:var(--red);font-size:.75em;font-style:normal}.hero-action i{text-align:left}.hero-action span{text-align:right}.hero-action b{font-weight:400}.hero-action:hover,.hero-action:focus-visible{color:var(--cream);outline:0;transform:scale(1.08)}.hero-action:hover i,.hero-action:hover span,.hero-action:focus-visible i,.hero-action:focus-visible span{color:var(--cream)}.intro .hero-action{position:absolute;bottom:5%;left:50%;transform:translateX(-50%)}.intro .hero-action:hover,.intro .hero-action:focus-visible{transform:translateX(-50%) scale(1.08)}.intro .controls{position:absolute;bottom:1.5%;left:0;right:0;margin:0;color:var(--ink);font-weight:700;text-shadow:1px 1px 0 var(--cream)}.launching .loading-crane{animation:crane-lift .65s steps(6,end) forwards}.launching .intro .panel{animation:panel-out .65s steps(6,end) forwards}.pause{position:absolute;top:20px;right:20px;z-index:4;min-width:44px;min-height:40px;border:3px solid var(--ink);background:var(--cream);color:var(--ink);cursor:pointer;box-shadow:3px 3px 0 var(--red);font-size:19px}.pause:hover,.pause:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.pause[hidden]{display:none}.stat{display:flex;justify-content:space-between;margin:18px 0;padding:12px 0;border-block:3px solid var(--cream);font-size:13px;text-transform:uppercase}.stat strong{font-size:24px;color:var(--gold);text-shadow:3px 3px 0 var(--ink)}.game-over{background:transparent}.game-over .panel{border:0;background:transparent;box-shadow:none;color:var(--cream)}.game-over .copy{font-family:RasterForge,monospace;color:var(--cream);text-shadow:2px 2px 0 var(--ink)}.game-over .hero-action{margin:17px auto 0;color:var(--cream)}.over-panel{animation:game-over-pop .48s steps(5,end)}@keyframes loading-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}@keyframes loading-drop{0%{transform:translateY(-150px)}55%,100%{transform:translateY(0)}}@keyframes crane-lift{to{transform:scale(2.7) translate(15%,35%);opacity:0}}@keyframes panel-out{to{transform:translateY(-120%);opacity:0}}@keyframes game-over-pop{0%{transform:scale(.45);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}@media(max-width:430px){.stage-stack{width:100vw;height:100dvh;min-height:0;border:0}.frame{border-width:3px;outline-width:3px;outline-offset:-9px}.panel{padding:20px 16px}.intro h1{top:9%}.intro .eyebrow{top:5%}.intro .hero-action{bottom:6%}.loading .loading-building{bottom:16%}}@media(max-height:500px) and (orientation:landscape){.stage-stack{width:min(100vw,62.5dvh);height:100dvh;min-height:0}.panel{padding:12px 15px}.copy{margin:9px auto}}
+  </style>
+  <style>
+    .frame { display: none; }
+    h1, h2 { line-height: 1.02; letter-spacing: .04em; text-shadow: 2px 2px 0 var(--cream), 4px 4px 0 var(--ink); }
+    h1 { font-size: clamp(38px, 10.5vw, 55px); }
+    h2 { font-size: clamp(31px, 8.5vw, 45px); }
+    .panel { border: 0; background: transparent; box-shadow: none; }
+    .copy { font-family: RasterForge, monospace; font-size: 13px; line-height: 1.45; text-shadow: 1px 1px 0 var(--cream); }
+    .controls kbd { background: transparent; }
+    .pause { top: 18px; right: 18px; padding: 8px 10px; border: 0; background: transparent; color: var(--red); box-shadow: none; font-size: 13px; letter-spacing: .08em; text-shadow: 2px 2px 0 var(--ink); }
+    .pause:hover, .pause:focus-visible { color: var(--cream); outline: 2px solid var(--ink); outline-offset: 3px; }
+    .pause .pause-mark { font-size: 17px; }
+    .paused { background: transparent; }
+    .paused .panel { color: var(--ink); }
+    .paused h2 { font-size: clamp(35px, 10vw, 50px); }
+    .game-over .panel, .game-over .copy { color: var(--ink); }
+    .game-over .hero-action, .game-over .hero-action i, .game-over .hero-action span { color: var(--red); }
+    .verified-pb{position:absolute;z-index:5;top:20px;left:18px;margin:0;padding:6px 8px;background:var(--cream);color:var(--ink);font-size:10px;letter-spacing:.05em;text-transform:uppercase;box-shadow:3px 3px 0 var(--red)}
+  </style>
+</head>
+<body>
+  <main class="stage-stack" aria-label="B-Dome Stack game"><canvas id="canvas" aria-label="B-Dome Stack playfield"></canvas><p id="verified-pb" class="verified-pb" hidden></p><button id="pause" class="pause" type="button" hidden aria-label="Pause game"><span class="pause-mark" aria-hidden="true">Ⅱ</span> PAUSE</button>
+    <section id="loading" class="screen loading"><img class="loading-crane" src="./assets/tedx-crane.png" alt=""><img class="loading-building" src="./assets/tedx-bits-building.png" alt=""><p class="loading-copy">STACKING IDEAS…</p></section>
+    <section id="intro" class="screen intro" hidden><div class="panel"><p class="eyebrow">TEDxBITSGoa Arcade</p><h1>B-Dome<br><span>Stack</span></h1><button id="start" class="hero-action" type="button"><i aria-hidden="true">▶</i><b>Start building</b><span aria-hidden="true">◀</span></button><p class="controls"><span><kbd>Space</kbd> release</span><span>tap / click</span></p></div></section>
+    <section id="paused" class="screen paused" hidden aria-modal="true" role="dialog" aria-labelledby="pause-title"><div class="panel"><p class="eyebrow">TEDxBITSGoa Arcade</p><h2 id="pause-title">Stage<br><span>paused</span></h2><p class="copy">Your blueprint is safe.</p><button id="resume" class="hero-action" type="button"><i aria-hidden="true">▶</i><b>Resume build</b><span aria-hidden="true">◀</span></button></div></section>
+    <section id="game-over" class="screen game-over" hidden aria-modal="true" role="dialog" aria-labelledby="over-title"><div class="panel over-panel"><p class="eyebrow">Final blueprint</p><h2 id="over-title">Build<br><span>complete</span></h2><div class="stat"><span>Score</span><strong id="score">0</strong></div><p id="result-copy" class="copy">A new idea is already on the hook.</p><button id="restart" class="hero-action" type="button"><i aria-hidden="true">▶</i><b>Build again</b><span aria-hidden="true">◀</span></button></div></section>
+  </main>
+  <script src="./dist/main.js"></script>
+  <script>
+    var game,gameStart=false,gamePaused=false,score=0,successCount=0,tedxRunStartedAt=0,tedxPlacementEvents=[];
+    var loading=document.getElementById('loading'),intro=document.getElementById('intro'),pauseButton=document.getElementById('pause'),paused=document.getElementById('paused'),gameOver=document.getElementById('game-over'),scoreNode=document.getElementById('score'),resultCopy=document.getElementById('result-copy'),personalBest=Number(new URLSearchParams(window.location.search).get('pb')||0),personalBestNode=document.getElementById('verified-pb');
+    if(personalBest>0){personalBestNode.textContent='Verified PB '+personalBest;personalBestNode.hidden=false}
+    function ready(){loading.classList.add('awaiting');intro.hidden=false}function closeOverlays(){intro.hidden=true;paused.hidden=true;gameOver.hidden=true}function preventGameClick(event){event.preventDefault();event.stopPropagation()}
+    function togglePause(){if(!gameStart||!game||gameOver.hidden===false)return;game.togglePaused();gamePaused=!gamePaused;paused.hidden=!gamePaused;pauseButton.setAttribute('aria-label',gamePaused?'Resume game':'Pause game');if(gamePaused)document.getElementById('resume').focus()}
+    function showGameOver(misses){scoreNode.textContent=score||0;resultCopy.textContent=successCount>8?'That dome deserves a standing ovation.':'Every landmark starts with one block.';gameOver.hidden=false;pauseButton.hidden=true;gameStart=false;if(window.parent!==window&&tedxRunStartedAt){window.parent.postMessage({type:'tedx:game-over',gameId:'stage-stack',score:score||0,durationMs:Date.now()-tedxRunStartedAt,metadata:{placements:tedxPlacementEvents,misses:misses},evidence:{placements:tedxPlacementEvents,misses:misses}},window.location.origin)}document.getElementById('restart').focus()}
+    function startGame(){if(gameStart)return;intro.classList.add('launching');setTimeout(function(){loading.hidden=true;closeOverlays();gameStart=true;gamePaused=false;score=0;successCount=0;tedxPlacementEvents=[];tedxRunStartedAt=Date.now();pauseButton.hidden=false;game.start()},620)}
+    function initializeGame(){var rect=document.querySelector('.stage-stack').getBoundingClientRect();game=TowerGame({width:Math.round(rect.width),height:Math.round(rect.height),canvasId:'canvas',soundOn:true,setGameScore:function(nextScore){var previous=score||0;score=nextScore;tedxPlacementEvents.push({perfect:(nextScore-previous)>25})},setGameSuccess:function(nextSuccess){successCount=nextSuccess},setGameFailed:function(misses){if(misses>=1)showGameOver(misses)}});game.load(function(){game.init();ready()})}
+    document.getElementById('start').addEventListener('click',startGame);document.getElementById('restart').addEventListener('click',function(){window.location.reload()});pauseButton.addEventListener('mousedown',preventGameClick);pauseButton.addEventListener('touchstart',preventGameClick,{passive:false});pauseButton.addEventListener('click',togglePause);document.getElementById('resume').addEventListener('mousedown',preventGameClick);document.getElementById('resume').addEventListener('touchstart',preventGameClick,{passive:false});document.getElementById('resume').addEventListener('click',togglePause);document.addEventListener('keydown',function(event){if(event.key==='Escape'&&gameStart){event.preventDefault();togglePause();return}if((event.code==='Space'||event.key==='Enter')&&gameStart&&!gamePaused){event.preventDefault();game.touchStartListener()}});window.addEventListener('resize',function(){if(!gameStart)window.location.reload()});initializeGame();
+  </script>
+</body>
+</html>

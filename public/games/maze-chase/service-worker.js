@@ -1,6 +1,6 @@
-const CACHE_VERSION = "v9";
-const STATIC_CACHE_NAME = `pacman-static-${CACHE_VERSION}`;
-const RUNTIME_CACHE_NAME = `pacman-runtime-${CACHE_VERSION}`;
+const CACHE_VERSION = "v11";
+const STATIC_CACHE_NAME = `coco-chase-static-${CACHE_VERSION}`;
+const RUNTIME_CACHE_NAME = `coco-chase-runtime-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -11,7 +11,10 @@ const STATIC_ASSETS = [
   "./scripts/ghost.js",
   "./scripts/game.js",
   "./images/animations.gif",
-  "./images/ghost.png",
+  "./images/coordinators/king.png",
+  "./images/coordinators/manan.png",
+  "./images/coordinators/meghana.png",
+  "./images/coordinators/priyansh.png",
   "./images/pacman favicon.png",
   "./images/pacman-share.png",
 ];

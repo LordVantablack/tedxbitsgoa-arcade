@@ -16,6 +16,11 @@ export async function POST(request: Request) {
     requireSameOrigin(request);
     if (!isCampaignLive()) throw new ApiError(403, "The arcade campaign is not live right now.");
     const user = await requireSessionUser();
+    const profile = await getRuntimeEnv().DB
+      .prepare("SELECT handle FROM players WHERE google_subject = ?")
+      .bind(user.googleSubject)
+      .first<{ handle: string | null }>();
+    if (!profile?.handle) throw new ApiError(403, "Create your player profile before starting a qualifying run.");
     const body = parseJsonObject(await request.json());
     const gameId = typeof body.gameId === "string" ? body.gameId : "";
     if (!isGameId(gameId)) throw new ApiError(400, "Choose a valid game.");

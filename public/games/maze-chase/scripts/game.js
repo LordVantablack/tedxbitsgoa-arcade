@@ -1,7 +1,14 @@
 const canvas = document.getElementById("canvas");
 const canvasContext = canvas.getContext("2d");
+const isEmbeddedGame = new URLSearchParams(window.location.search).get("embed") === "1";
+document.body.classList.toggle("embedded-game", isEmbeddedGame);
 const pacmanFrames = document.getElementById("animation");
-const ghostFrames = document.getElementById("ghosts");
+const coordinatorPortraits = {
+  king: document.getElementById("coordinator-king"),
+  manan: document.getElementById("coordinator-manan"),
+  meghana: document.getElementById("coordinator-meghana"),
+  priyansh: document.getElementById("coordinator-priyansh"),
+};
 const startGameButton = document.getElementById("start-game");
 const pauseToggleButton = document.getElementById("pause-toggle");
 const restartGameButton = document.getElementById("restart-game");
@@ -71,6 +78,7 @@ const GAME_PHASE_DYING = "dying";
 const GAME_PHASE_INTERMISSION = "intermission";
 const GAME_PHASE_CUTSCENE = "cutscene";
 const GAME_PHASE_GAMEOVER = "gameover";
+const FORCE_ARCADE_VIEW = true;
 
 const HUD_ROWS = 2;
 const FRAME_STEP_MS = 1000 / 60;
@@ -231,10 +239,10 @@ const CHALLENGE_MODES = {
 
 const COLOR_PALETTES = {
   classic: {
-    background: "black",
-    wallOuter: "#342DCA",
-    wallInner: "black",
-    pellet: "#FEB897",
+    background: "#071a33",
+    wallOuter: "#e62b1e",
+    wallInner: "#071a33",
+    pellet: "#F1EEE8",
     powerPellet: "#F7FF8A",
     textPrimary: "white",
     textHigh: "#FFE16A",
@@ -286,7 +294,8 @@ const COLOR_PALETTES = {
 const GHOST_DEFINITIONS = [
   {
     id: "blinky",
-    displayName: "Blinky",
+    displayName: "Tejas",
+    portrait: "king",
     spriteIndex: 0,
     scatterTile: { x: 42, y: 1 },
     startInHouse: false,
@@ -296,7 +305,8 @@ const GHOST_DEFINITIONS = [
   },
   {
     id: "pinky",
-    displayName: "Pinky",
+    displayName: "Manan",
+    portrait: "manan",
     spriteIndex: 1,
     scatterTile: { x: 1, y: 1 },
     startInHouse: true,
@@ -306,7 +316,8 @@ const GHOST_DEFINITIONS = [
   },
   {
     id: "inky",
-    displayName: "Inky",
+    displayName: "Meghana",
+    portrait: "meghana",
     spriteIndex: 2,
     scatterTile: { x: 42, y: 29 },
     startInHouse: true,
@@ -316,7 +327,8 @@ const GHOST_DEFINITIONS = [
   },
   {
     id: "clyde",
-    displayName: "Clyde",
+    displayName: "Priyansh",
+    portrait: "priyansh",
     spriteIndex: 3,
     scatterTile: { x: 1, y: 29 },
     startInHouse: true,
@@ -1283,7 +1295,7 @@ function persistArcadeViewPreference(enabled) {
 }
 
 function canUseArcadeView() {
-  return (
+  return FORCE_ARCADE_VIEW || (
     window.innerWidth >= 980 &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches
   );
@@ -1504,7 +1516,7 @@ function renderArcadeViewButton() {
 
 function setArcadeViewEnabled(enabled, options = {}) {
   const shouldPersist = options.persist !== false;
-  const nextEnabled = Boolean(enabled) && canUseArcadeView();
+  const nextEnabled = FORCE_ARCADE_VIEW || (Boolean(enabled) && canUseArcadeView());
 
   if (arcadeViewEnabled === nextEnabled && document.body.classList.contains("arcade-view") === nextEnabled) {
     if (shouldPersist) persistArcadeViewPreference(nextEnabled);
@@ -1783,7 +1795,7 @@ function resizeCanvasToFitViewport() {
   const availW = getCanvasMaxWidth();
   const availH = Math.max(220, window.innerHeight - measureNonCanvasUiHeight());
   const coarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-  const arcadeScaleActive = arcadeViewEnabled && canUseArcadeView();
+  const arcadeScaleActive = arcadeViewEnabled;
   const maxScale = arcadeScaleActive ? 1.65 : (coarsePointer ? 1 : 1.12);
 
   renderScale = Math.min(availW / logicalW, availH / logicalH, maxScale);
@@ -2648,6 +2660,7 @@ function createGhosts() {
       {
         personality: def.id,
         displayName: def.displayName,
+        portrait: coordinatorPortraits[def.portrait],
         scatterTile: def.scatterTile,
         startInHouse: def.startInHouse,
         releaseDotThreshold: def.releaseDotThreshold,
@@ -4021,7 +4034,7 @@ function drawPacman() {
 function drawRemainingLives() {
   const palette = getCurrentPalette();
   const hudScale = settings.largeHud ? 1.18 : 1;
-  canvasContext.font = `${Math.round(20 * hudScale)}px Emulogic`;
+  canvasContext.font = `${Math.round(20 * hudScale)}px Raster Forge`;
   canvasContext.fillStyle = palette.textPrimary;
   canvasContext.fillText("Lives:", logicalW - 190, oneBlockSize * (map.length + 1));
 
@@ -4046,11 +4059,11 @@ function drawScoreHud() {
   const hudY = oneBlockSize * (map.length + 1);
   const hudY2 = oneBlockSize * (map.length + 1.8);
 
-  canvasContext.font = `${Math.round(20 * hudScale)}px Emulogic`;
+  canvasContext.font = `${Math.round(20 * hudScale)}px Raster Forge`;
   canvasContext.fillStyle = palette.textPrimary;
   canvasContext.fillText(`Score: ${score}`, 0, hudY);
 
-  canvasContext.font = `${Math.round(16 * hudScale)}px Emulogic`;
+  canvasContext.font = `${Math.round(16 * hudScale)}px Raster Forge`;
   canvasContext.fillStyle = palette.textHigh;
   canvasContext.fillText(`High: ${highScore}`, 0, hudY2);
 
@@ -4102,7 +4115,7 @@ function drawPointPopups() {
     const life = (popup.expiresAt - lastUpdateNow) / (popup.expiresAt - popup.createdAt);
     const yOffset = settings.reducedMotion ? 0 : (1 - life) * oneBlockSize;
 
-    canvasContext.font = "14px Emulogic";
+    canvasContext.font = "14px Raster Forge";
     canvasContext.fillStyle = popup.color;
     canvasContext.globalAlpha = Math.max(0, Math.min(1, life));
     canvasContext.fillText(popup.text, popup.x, popup.y - yOffset);
@@ -4114,7 +4127,7 @@ function drawHudToasts() {
   for (let i = 0; i < hudToasts.length; i++) {
     const toast = hudToasts[i];
     const life = (toast.expiresAt - lastUpdateNow) / (toast.expiresAt - toast.createdAt);
-    canvasContext.font = "14px Emulogic";
+    canvasContext.font = "14px Raster Forge";
     canvasContext.fillStyle = toast.color;
     canvasContext.globalAlpha = Math.max(0, Math.min(1, life));
     canvasContext.fillText(toast.text, logicalW / 2 - 50, oneBlockSize * (map.length + 1));
@@ -4128,12 +4141,12 @@ function drawOverlay(title, subtitle) {
   canvasContext.fillRect(0, 0, logicalW, logicalH);
 
   canvasContext.textAlign = "center";
-  canvasContext.font = "24px Emulogic";
+  canvasContext.font = "28px Raster Forge";
   canvasContext.fillStyle = palette.overlayTitle;
   canvasContext.fillText(title, logicalW / 2, logicalH / 2 - 12);
 
   if (subtitle) {
-    canvasContext.font = "12px Emulogic";
+    canvasContext.font = "14px Raster Forge";
     canvasContext.fillStyle = palette.overlaySubtitle;
     canvasContext.fillText(subtitle, logicalW / 2, logicalH / 2 + oneBlockSize);
   }
@@ -4141,10 +4154,88 @@ function drawOverlay(title, subtitle) {
   canvasContext.textAlign = "start";
 }
 
+function drawIdeaSignalStartScreen() {
+  const centerX = logicalW / 2;
+  const portraitSize = Math.max(oneBlockSize * 3.4, 64);
+  const portraitY = logicalH * 0.51;
+  const portraits = [
+    { image: coordinatorPortraits.king, label: "TEJAS", x: logicalW * 0.2 },
+    { image: coordinatorPortraits.manan, label: "MANAN", x: logicalW * 0.39 },
+    { image: coordinatorPortraits.meghana, label: "MEGHANA", x: logicalW * 0.61 },
+    { image: coordinatorPortraits.priyansh, label: "PRIYANSH", x: logicalW * 0.8 },
+  ];
+  const motion = settings.reducedMotion ? 0.5 : (Math.sin(lastUpdateNow / 900) + 1) / 2;
+  const signalX = logicalW * (0.16 + motion * 0.68);
+
+  canvasContext.save();
+  canvasContext.fillStyle = "#071A33";
+  canvasContext.fillRect(0, 0, logicalW, logicalH);
+  canvasContext.strokeStyle = "#F1EEE8";
+  canvasContext.lineWidth = Math.max(2, oneBlockSize * 0.14);
+  canvasContext.strokeRect(oneBlockSize, oneBlockSize, logicalW - oneBlockSize * 2, logicalH - oneBlockSize * 2);
+  canvasContext.strokeStyle = "#E62B1E";
+  canvasContext.strokeRect(oneBlockSize * 1.45, oneBlockSize * 1.45, logicalW - oneBlockSize * 2.9, logicalH - oneBlockSize * 2.9);
+
+  canvasContext.textAlign = "center";
+  canvasContext.fillStyle = "#E62B1E";
+  canvasContext.font = "16px Raster Forge";
+  canvasContext.fillText("TEDxBITSGoa ARCADE", centerX, logicalH * 0.19);
+  canvasContext.fillStyle = "#F1EEE8";
+  canvasContext.font = "42px Raster Forge";
+  canvasContext.fillText("IDEA CIRCUIT", centerX, logicalH * 0.29);
+  canvasContext.fillStyle = "#C89B3C";
+  canvasContext.font = "16px Raster Forge";
+  canvasContext.fillText("SIGNAL THE WAY FORWARD", centerX, logicalH * 0.36);
+
+  canvasContext.strokeStyle = "#F1EEE8";
+  canvasContext.lineWidth = Math.max(2, oneBlockSize * 0.1);
+  canvasContext.beginPath();
+  canvasContext.moveTo(logicalW * 0.13, portraitY + portraitSize * 0.56);
+  canvasContext.lineTo(logicalW * 0.87, portraitY + portraitSize * 0.56);
+  canvasContext.stroke();
+
+  for (let i = 0; i < portraits.length; i++) {
+    const portrait = portraits[i];
+    const isEnergized = Math.abs(signalX - portrait.x) < portraitSize * 0.7;
+    canvasContext.globalAlpha = isEnergized ? 1 : 0.8;
+    if (portrait.image && portrait.image.complete && portrait.image.naturalWidth) {
+      canvasContext.drawImage(
+        portrait.image,
+        portrait.x - portraitSize / 2,
+        portraitY,
+        portraitSize,
+        portraitSize
+      );
+    }
+    canvasContext.globalAlpha = 1;
+    canvasContext.fillStyle = isEnergized ? "#E62B1E" : "#F1EEE8";
+    canvasContext.font = "13px Raster Forge";
+    canvasContext.fillText(portrait.label, portrait.x, portraitY + portraitSize + oneBlockSize * 0.75);
+  }
+
+  canvasContext.save();
+  canvasContext.translate(signalX, portraitY + portraitSize * 0.56);
+  canvasContext.rotate(Math.PI / 4);
+  canvasContext.fillStyle = "#E62B1E";
+  canvasContext.fillRect(-oneBlockSize * 0.56, -oneBlockSize * 0.56, oneBlockSize * 1.12, oneBlockSize * 1.12);
+  canvasContext.strokeStyle = "#F1EEE8";
+  canvasContext.lineWidth = Math.max(1, oneBlockSize * 0.08);
+  canvasContext.strokeRect(-oneBlockSize * 0.56, -oneBlockSize * 0.56, oneBlockSize * 1.12, oneBlockSize * 1.12);
+  canvasContext.restore();
+
+  canvasContext.fillStyle = "#F1EEE8";
+  canvasContext.font = "18px Raster Forge";
+  canvasContext.fillText("TAP THE SIGNAL TO BEGIN", centerX, logicalH * 0.86);
+  canvasContext.fillStyle = "#C8BFAE";
+  canvasContext.font = "13px Raster Forge";
+  canvasContext.fillText("OR PRESS ENTER", centerX, logicalH * 0.91);
+  canvasContext.restore();
+}
+
 function drawReadyMessage() {
   const palette = getCurrentPalette();
   canvasContext.textAlign = "center";
-  canvasContext.font = "22px Emulogic";
+  canvasContext.font = "22px Raster Forge";
   canvasContext.fillStyle = palette.overlayTitle;
   canvasContext.fillText("READY!", logicalW / 2, logicalH / 2);
   canvasContext.textAlign = "start";
@@ -4168,11 +4259,11 @@ function drawCutscene() {
 
   canvasContext.textAlign = "center";
   canvasContext.fillStyle = accent;
-  canvasContext.font = "24px Emulogic";
+  canvasContext.font = "24px Raster Forge";
   canvasContext.fillText(activeCutscene.title, logicalW / 2, logicalH * 0.36);
 
   canvasContext.fillStyle = palette.overlaySubtitle;
-  canvasContext.font = "12px Emulogic";
+  canvasContext.font = "12px Raster Forge";
   canvasContext.fillText(activeCutscene.subtitle, logicalW / 2, logicalH * 0.44);
   canvasContext.fillText("Press Start to skip", logicalW / 2, logicalH * 0.52);
 
@@ -4205,20 +4296,21 @@ function drawPhaseOverlay() {
   }
 
   if (phase === GAME_PHASE_START) {
-    const subtitle = attractModeActive
-      ? "Demo running - press Start to play"
-      : "Press Start, Enter, or gamepad Start";
-    drawOverlay("PAC-MAN", subtitle);
+    if (attractModeActive) {
+      drawOverlay("IDEA CIRCUIT", "Demo running - press Enter to play");
+    } else {
+      drawIdeaSignalStartScreen();
+    }
     return;
   }
 
   if (phase === GAME_PHASE_GAMEOVER) {
-    drawOverlay("GAME OVER", "Press Start or Restart");
+    drawOverlay("GAME OVER", "Tap the signal or Restart");
     return;
   }
 
   if (phase === GAME_PHASE_DYING && lives <= 0) {
-    drawOverlay("GAME OVER", "Press Start or Restart");
+    drawOverlay("GAME OVER", "Tap the signal or Restart");
     return;
   }
 
@@ -4591,6 +4683,12 @@ function wireUiEvents() {
   canvas.addEventListener("touchmove", onCanvasTouchMove, { passive: false });
   canvas.addEventListener("touchend", onCanvasTouchEnd, { passive: false });
   canvas.addEventListener("touchcancel", clearSwipeState, { passive: true });
+  canvas.addEventListener("click", () => {
+    if (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER) {
+      primeAudioContext();
+      handleAction("start");
+    }
+  });
 
   window.addEventListener("keydown", (event) => {
     const normalizedKey = normalizeKeyName(event.key);
@@ -4757,7 +4855,7 @@ function boot() {
     renderReplayStatus(`Replay loaded from URL (${replayFromHash.events.length} inputs).`);
   }
 
-  arcadeViewEnabled = loadArcadeViewPreference() && canUseArcadeView();
+  arcadeViewEnabled = FORCE_ARCADE_VIEW;
   document.body.classList.toggle("arcade-view", arcadeViewEnabled);
 
   resetMap();

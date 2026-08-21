@@ -26,7 +26,7 @@ export function AvatarPageClient() {
   }
 
   if (loading) return <main className="experience avatar-page-status"><SiteNav active="profile" /><section>LOADING PLAYER CARD…</section></main>;
-  if (!player && !demoMode) return <main className="experience avatar-page-status"><SiteNav active="profile" /><section><p>YOUR PLAYER CARD IS LINKED TO YOUR BITS GOA ACCOUNT.</p><Link className="big-button big-button--red" href="/arcade#login">LOGIN TO CONTINUE <span>→</span></Link></section></main>;
+  if (!player && !demoMode) return <main className="experience avatar-page"><SiteNav active="profile" /><AvatarStudio handle={handle} avatar={avatar} error="" onHandle={setHandle} onAvatar={setAvatar} onSave={() => undefined} /><section className="profile-sign-in-gate" aria-label="Sign in required"><div><p>PLAYER PROFILE LOCKED</p><strong>SIGN IN TO<br />BUILD YOUR PLAYER.</strong><span>Your callsign and avatar are linked to your BITS Goa account.</span><Link className="big-button big-button--red" href="/arcade?setup=profile">SIGN IN WITH BITS GOA <b>→</b></Link></div></section></main>;
   if (demoMode && !player) return <main className="experience avatar-page"><SiteNav active="profile" /><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => setError("Preview mode only — sign in to save your player card.")} /></main>;
   return <main className="experience avatar-page"><SiteNav active="profile" /><AvatarStudio handle={handle} avatar={avatar} error={error} onHandle={setHandle} onAvatar={setAvatar} onSave={() => void save()} /></main>;
 }

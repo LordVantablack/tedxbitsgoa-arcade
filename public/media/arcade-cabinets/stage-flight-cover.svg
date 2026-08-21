@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-label="Sober Parhawk cover art">
+  <rect width="960" height="600" fill="#090909"/>
+  <g fill="none" stroke="#e62b1e" stroke-width="8" opacity=".5">
+    <path d="M-40 620 240 0M80 620 360 0M200 620 480 0M320 620 600 0M440 620 720 0M560 620 840 0M680 620 960 0M800 620 1080 0"/>
+  </g>
+  <g fill="#201a19" stroke="#f1eee8" stroke-width="7">
+    <path d="M80 0h138v230H80zM742 0h138v230H742zM80 370h138v230H80zM742 370h138v230H742z"/>
+  </g>
+  <g stroke="#e62b1e" stroke-width="13">
+    <path d="m92 14 110 190M202 14 92 204M754 14l110 190M864 14 754 204M92 387l110 190M202 387 92 577M754 387l110 190M864 387 754 577"/>
+  </g>
+  <g transform="translate(480 300) rotate(-10)">
+    <rect x="-114" y="-66" width="228" height="132" fill="#e62b1e" stroke="#f1eee8" stroke-width="9"/>
+    <rect x="-73" y="-24" width="112" height="14" fill="#f1eee8"/>
+    <rect x="-73" y="8" width="77" height="14" fill="#f1eee8"/>
+    <rect x="72" y="-66" width="42" height="132" fill="#171414"/>
+    <path d="M-155-24h41v48h-41z" fill="#f1eee8" stroke="#171414"/>
+  </g>
+  <rect x="0" y="542" width="960" height="58" fill="#171414"/>
+  <rect x="0" y="542" width="960" height="6" fill="#e62b1e"/>
+  <text x="480" y="88" fill="#f1eee8" font-family="monospace" font-size="52" font-weight="700" text-anchor="middle">SOBER PARHAWK</text>
+</svg>

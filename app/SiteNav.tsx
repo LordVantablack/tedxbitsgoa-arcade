@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { THEME } from "../config/theme";
 
 type SiteNavProps = {
-  active?: "home" | "arcade" | "leaderboard" | "profile";
+  active?: "home" | "arcade" | "leaderboard" | "profile" | "lab";
   slot?: ReactNode;
 };
 
@@ -15,6 +15,7 @@ export function SiteNav({ active, slot }: SiteNavProps) {
         <Link href="/" aria-current={active === "home" ? "page" : undefined}>HOME</Link>
         <Link href="/arcade" aria-current={active === "arcade" ? "page" : undefined}>ARCADE</Link>
         <Link href="/leaderboard" aria-current={active === "leaderboard" ? "page" : undefined}>LEADERBOARD</Link>
+        <Link href="/game-lab" aria-current={active === "lab" ? "page" : undefined}>GAME LAB</Link>
         <Link href="/avatar" aria-current={active === "profile" ? "page" : undefined}>PROFILE</Link>
         <a href={THEME.instagramUrl} target="_blank" rel="noreferrer">CHECK US OUT ↗</a>
       </nav>

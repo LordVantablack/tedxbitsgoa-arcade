@@ -14,6 +14,8 @@ export const hookNormal = 'HOOK_NORMAL'
 export const bgImgOffset = 'BACKGROUND_IMG_OFFSET_HEIGHT'
 export const lineInitialOffset = 'LINE_INITIAL_OFFSET'
 export const bgLinearGradientOffset = 'BACKGROUND_LINEAR_GRADIENT_OFFSET_HEIGHT'
+export const landingDust = 'LANDING_DUST'
+export const lawnOffset = 'LAWN_OFFSET'
 
 
 export const blockCount = 'BLOCK_COUNT'

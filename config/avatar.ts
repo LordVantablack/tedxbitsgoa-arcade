@@ -1,46 +1,46 @@
 export const CHAMPION_TEMPLATES = [
   {
-    id: "spark",
-    name: "SPARK",
-    role: "ENERGY DRINK ENTHUSIAST",
-    origin: "Known to appear at the exact moment the group chat goes silent.",
-    quirk: "CAFFEINE +5",
-    stats: { idea: 4, chaos: 5, aura: 3 },
-    spritePosition: "0% center",
-  },
-  {
-    id: "afterhours",
-    name: "AFTERHOURS",
-    role: "DECK-BUILDING NIGHT OWL",
-    origin: "Will say “one last iteration” with complete sincerity at 2:47 AM.",
-    quirk: "SLIDE POLISH +5",
+    id: "odyssey",
+    name: "ODYSSEY",
+    role: "BLUE BACK-PRINT TEE",
+    origin: "A navy oversized tee with the blue winged figure and golden sun back print.",
+    quirk: "GREAT CHANGE +5",
     stats: { idea: 5, chaos: 3, aura: 4 },
-    spritePosition: "33.333% center",
+    spriteSrc: "/media/avatar-merch/v3/odyssey.png",
   },
   {
-    id: "sidequest",
-    name: "SIDEQUEST",
-    role: "CAMPUS LOREKEEPER",
-    origin: "Knows the room, the people, and somehow the useful shortcut.",
-    quirk: "SOCIAL BUFF +5",
-    stats: { idea: 3, chaos: 4, aura: 5 },
-    spritePosition: "66.666% center",
+    id: "odyssey-female",
+    name: "ODYSSEY / F",
+    role: "BLUE BACK-PRINT TEE",
+    origin: "A navy oversized tee with the blue winged figure and golden sun back print.",
+    quirk: "GREAT CHANGE +5",
+    stats: { idea: 5, chaos: 3, aura: 4 },
+    spriteSrc: "/media/avatar-merch/v3/odyssey-female.png",
   },
   {
-    id: "signal",
-    name: "SIGNAL",
-    role: "QUIETLY CRACKED CREATIVE",
-    origin: "Rarely announces the plan. Usually makes it look much better.",
-    quirk: "PIXEL PERFECT +5",
-    stats: { idea: 5, chaos: 2, aura: 5 },
-    spritePosition: "100% center",
+    id: "transcendence",
+    name: "TRANSCENDENCE",
+    role: "ORANGE BACK-PRINT TEE",
+    origin: "A burnt-orange oversized tee with the red-and-cream winged bird back print.",
+    quirk: "RISE ABOVE +5",
+    stats: { idea: 4, chaos: 5, aura: 3 },
+    spriteSrc: "/media/avatar-merch/v3/transcendence.png",
+  },
+  {
+    id: "transcendence-female",
+    name: "TRANSCENDENCE / F",
+    role: "ORANGE BACK-PRINT TEE",
+    origin: "A burnt-orange oversized tee with the red-and-cream winged bird back print.",
+    quirk: "RISE ABOVE +5",
+    stats: { idea: 4, chaos: 5, aura: 3 },
+    spriteSrc: "/media/avatar-merch/v3/transcendence-female.png",
   },
 ] as const;
 
 export type ChampionTemplate = (typeof CHAMPION_TEMPLATES)[number];
 export type AvatarConfig = { template: ChampionTemplate["id"] };
 
-export const DEFAULT_AVATAR: AvatarConfig = { template: "spark" };
+export const DEFAULT_AVATAR: AvatarConfig = { template: "odyssey" };
 
 export function championFor(avatar: AvatarConfig): ChampionTemplate {
   return CHAMPION_TEMPLATES.find((champion) => champion.id === avatar.template) ?? CHAMPION_TEMPLATES[0];

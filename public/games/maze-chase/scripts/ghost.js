@@ -27,6 +27,7 @@ class Ghost {
         this.imageY = imageY;
         this.imageHeight = imageHeight;
         this.imageWidth = imageWidth;
+        this.portrait = options.portrait || null;
         this.range = range;
         this.state = "normal";
         this.personality = options.personality || "blinky";
@@ -930,21 +931,31 @@ class Ghost {
         canvasContext.fill();
     }
 
+    drawPortrait() {
+        if (!this.portrait || !this.portrait.complete || !this.portrait.naturalWidth) {
+            return false;
+        }
+
+        // This enlarges only the visible portrait; movement and collision still
+        // use this.width/this.height, preserving the established game rules.
+        const portraitSize = this.width * 1.8;
+        const portraitX = this.x - (portraitSize - this.width) / 2;
+        const portraitY = this.y - (portraitSize - this.height) / 2;
+        canvasContext.drawImage(
+            this.portrait,
+            portraitX,
+            portraitY,
+            portraitSize,
+            portraitSize
+        );
+        return true;
+    }
+
     draw() {
         if (this.isInHouse()) {
             canvasContext.save();
             canvasContext.globalAlpha = 0.65;
-            canvasContext.drawImage(
-                ghostFrames,
-                this.imageX,
-                this.imageY,
-                this.imageWidth,
-                this.imageHeight,
-                this.x,
-                this.y,
-                this.width,
-                this.height
-            );
+            this.drawPortrait();
             canvasContext.restore();
             return;
         }
@@ -963,17 +974,7 @@ class Ghost {
             return;
         }
 
-        canvasContext.drawImage(
-            ghostFrames,
-            this.imageX,
-            this.imageY,
-            this.imageWidth,
-            this.imageHeight,
-            this.x,
-            this.y,
-            this.width,
-            this.height
-        );
+        this.drawPortrait();
         canvasContext.restore();
     }
 }

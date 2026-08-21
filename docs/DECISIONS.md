@@ -25,3 +25,17 @@ campus campaign and keeps free hosting usage low.
 
 An asset manifest and documented folders are faster and safer than a custom CMS
 for a 10–15 day event. A CMS can be added later for non-security content.
+
+## 006 — Stage Flight replaces Deadline Dash before campaign launch
+
+The campaign switch is off, so the runner can be replaced without mixing live
+scores. The `deadline-dash` machine ID is retained for existing integration
+paths, but its public title is now Stage Flight and its game version is 2.0.0.
+The score is one point per cleared light gate. The previous 1.0.0 runner board
+must not be reopened or combined with this new version.
+
+## 007 — Stage Flight's paced difficulty is versioned
+
+Stage Flight 2.1.0 adds score-tiered gate speed, opening size, and spacing.
+The verified score remains one point per cleared gate; the version change keeps
+the new pace distinct from the fixed-difficulty 2.0.0 experience.

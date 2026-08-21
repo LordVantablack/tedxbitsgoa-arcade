@@ -39,10 +39,13 @@ export function validateRunPayload(gameId: GameId, payload: RunPayload): string 
 }
 
 function validateDeadlineDash({ score, durationMs, metadata }: RunPayload): void {
-  const jumps = readNonNegativeInt(metadata.jumps, "jumps", 20_000);
-  const maxPlausibleScore = Math.floor(durationMs / 1_000) * 200 + 1_000;
-  if (score > maxPlausibleScore || jumps > Math.ceil(durationMs / 80)) {
-    throw new ApiError(422, "This runner score does not match the recorded run pace.");
+  const flaps = readNonNegativeInt(metadata.flaps, "flaps", 20_000);
+  const gatesCleared = readNonNegativeInt(metadata.gatesCleared, "gatesCleared", 9_999_999);
+  // Stage Flight emits one point per gate. A generous pace ceiling accepts a
+  // frame-delayed finish while rejecting a fabricated score burst.
+  const maxPlausibleScore = Math.floor(durationMs / 800) + 5;
+  if (score !== gatesCleared || score > maxPlausibleScore || flaps > Math.ceil(durationMs / 50)) {
+    throw new ApiError(422, "This Stage Flight score does not match the recorded run.");
   }
 }
 

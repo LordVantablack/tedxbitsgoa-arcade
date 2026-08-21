@@ -46,8 +46,5 @@ export const cloudAction = (instance, engine) => {
 }
 
 export const cloudPainter = (instance, engine) => {
-  const { ctx } = engine
-  const cloud = engine.getImg(instance.imgName)
-  ctx.drawImage(cloud, instance.x, instance.y, instance.width, instance.height)
+  // The supplied painted sky is the complete background decoration.
 }
-

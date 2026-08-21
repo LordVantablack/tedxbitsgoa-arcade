@@ -5,16 +5,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="PacMan">
-  <meta property="og:description" content="In-browser, canvas-based Pac-Man homage. Runs fully as static assets.">
-  <meta property="og:url" content="https://pacman.kamranboroomand.ir/">
-  <meta property="og:image" content="https://pacman.kamranboroomand.ir/images/pacman-share.png">
+  <meta property="og:title" content="Coco Chase | TEDxBITSGoa Arcade">
+  <meta property="og:description" content="A fast, original maze-chase game for the TEDxBITSGoa Arcade.">
+  <meta property="og:image" content="/media/arcade-cabinets/maze-chase-cover.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PacMan">
-  <meta name="twitter:description" content="In-browser, canvas-based Pac-Man homage. Fully static.">
-  <meta name="twitter:image" content="https://pacman.kamranboroomand.ir/images/pacman-share.png">
-  <meta name="theme-color" content="#08131d">
-  <title>PacMan Game</title>
+  <meta name="twitter:title" content="Coco Chase | TEDxBITSGoa Arcade">
+  <meta name="twitter:description" content="A fast, original maze-chase game for the TEDxBITSGoa Arcade.">
+  <meta name="twitter:image" content="/media/arcade-cabinets/maze-chase-cover.png">
+  <meta name="theme-color" content="#e62b1e">
+  <title>Coco Chase | TEDxBITSGoa Arcade</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="images/pacman favicon.png">
   <link rel="icon" type="image/png" href="images/pacman favicon.png">
@@ -30,34 +29,31 @@
   <header class="site-header">
     <div class="header-pill">
       <div class="identity-block">
-        <p class="identity-kicker">1980 Classic Rewired</p>
+        <p class="identity-kicker">TEDxBITSGoa Arcade</p>
         <h1 class="identity-name">
-          <span class="title-main">PAC-MAN</span>
+          <span class="title-main">COCO CHASE</span>
         </h1>
-        <p class="identity-subline">Play with keyboard, gamepad, touch, or virtual stick</p>
+        <p class="identity-subline">Collect bright ideas. Keep the circuit alive.</p>
         <div class="header-badges" aria-label="Feature highlights">
           <span class="header-badge">60 FPS</span>
-          <span class="header-badge">ARCADE AI</span>
-          <span class="header-badge">PWA READY</span>
+          <span class="header-badge">COCO CHASE</span>
+          <span id="verified-pb" class="header-badge" hidden></span>
+          <span class="header-badge">TEDxBITSGoa</span>
         </div>
       </div>
 
-      <nav class="header-links" aria-label="Project links">
-        <a class="header-link" href="https://github.com/KamranBoroomand/PacMan" target="_blank" rel="noopener">Source</a>
-        <a class="header-link" href="https://pacman.kamranboroomand.ir/" target="_blank" rel="noopener">Production</a>
-      </nav>
     </div>
 
     <div class="game-actions" aria-label="Game controls">
-      <button id="start-game" class="action-btn" type="button">Start</button>
       <button id="pause-toggle" class="action-btn" type="button" aria-pressed="false">Pause</button>
       <button id="restart-game" class="action-btn" type="button">Restart</button>
-      <button id="replay-last" class="action-btn" type="button" disabled>Replay</button>
-      <button id="daily-challenge" class="action-btn" type="button">Daily</button>
-      <button id="mute-toggle" class="action-btn" type="button" aria-pressed="false">Sound: On</button>
-      <button id="arcade-view-toggle" class="action-btn desktop-only" type="button" aria-pressed="false">Arcade View</button>
-      <button id="install-app" class="action-btn hidden" type="button">Install App</button>
-      <button id="update-app" class="action-btn hidden" type="button">Update Ready</button>
+      <button id="start-game" class="action-btn utility-action" type="button">Start</button>
+      <button id="replay-last" class="action-btn utility-action" type="button" disabled>Replay</button>
+      <button id="daily-challenge" class="action-btn utility-action" type="button">Daily</button>
+      <button id="mute-toggle" class="action-btn utility-action" type="button" aria-pressed="false">Sound: On</button>
+      <button id="arcade-view-toggle" class="action-btn utility-action desktop-only" type="button" aria-pressed="false">Arcade View</button>
+      <button id="install-app" class="action-btn utility-action hidden" type="button">Install App</button>
+      <button id="update-app" class="action-btn utility-action hidden" type="button">Update Ready</button>
     </div>
   </header>
 
@@ -81,7 +77,10 @@
 
       <div style="display:none;">
         <img id="animation" src="images/animations.gif" alt="pacman sprites">
-        <img id="ghosts" src="images/ghost.png" alt="ghost sprites">
+        <img id="coordinator-king" src="images/coordinators/king.png" alt="">
+        <img id="coordinator-manan" src="images/coordinators/manan.png" alt="">
+        <img id="coordinator-meghana" src="images/coordinators/meghana.png" alt="">
+        <img id="coordinator-priyansh" src="images/coordinators/priyansh.png" alt="">
       </div>
     </section>
 
@@ -244,8 +243,8 @@
   </main>
 
   <footer class="site-footer">
-    <p class="footer-line">PacMan · Focus-first gameplay shell</p>
-    <p class="footer-line footer-muted">Arcade motion, modern controls, and offline-ready play.</p>
+    <p class="footer-line">TEDxBITSGoa Arcade · Coco Chase</p>
+    <p class="footer-line footer-muted">Keyboard, touch, gamepad, and virtual-stick controls supported.</p>
   </footer>
 
   <script src="scripts/gameplay-utils.js" defer></script>
@@ -255,5 +254,8 @@
   <script src="scripts/pacman.js" defer></script>
   <script src="scripts/ghost.js" defer></script>
   <script src="scripts/game.js" defer></script>
+  <script>
+    (function(){var score=Number(new URLSearchParams(window.location.search).get('pb')||0),node=document.getElementById('verified-pb');if(score>0){node.textContent='VERIFIED PB '+score;node.hidden=false}}());
+  </script>
 </body>
 </html>
