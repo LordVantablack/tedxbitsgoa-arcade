@@ -467,6 +467,7 @@ let frameAccumulator = 0;
 let animationFrameId = null;
 let swipeStartX = null;
 let swipeStartY = null;
+let swipeStartedOnControl = false;
 let stickPointerId = null;
 let stickCenterX = 0;
 let stickCenterY = 0;
@@ -3377,10 +3378,22 @@ function handleAction(action, options = {}) {
 function clearSwipeState() {
   swipeStartX = null;
   swipeStartY = null;
+  swipeStartedOnControl = false;
+}
+
+function isSwipeControlTarget(target) {
+  if (!target || typeof target.closest !== "function") return false;
+  return Boolean(
+    target.closest(
+      "button, a, input, select, textarea, summary, label, .game-actions, .settings-panel"
+    )
+  );
 }
 
 function onCanvasTouchStart(event) {
   if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
+  swipeStartedOnControl = isEmbeddedGame && isSwipeControlTarget(event.target);
+  if (swipeStartedOnControl) return;
   if (!event.touches || event.touches.length === 0) return;
   primeAudioContext();
   swipeStartX = event.touches[0].clientX;
@@ -3389,12 +3402,17 @@ function onCanvasTouchStart(event) {
 
 function onCanvasTouchMove(event) {
   if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
+  if (swipeStartedOnControl) return;
   if (swipeStartX === null || swipeStartY === null) return;
   event.preventDefault();
 }
 
 function onCanvasTouchEnd(event) {
   if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
+  if (swipeStartedOnControl) {
+    clearSwipeState();
+    return;
+  }
   if (swipeStartX === null || swipeStartY === null) return;
   if (!event.changedTouches || event.changedTouches.length === 0) {
     clearSwipeState();
@@ -4681,10 +4699,11 @@ function wireUiEvents() {
     });
   }
 
-  canvas.addEventListener("touchstart", onCanvasTouchStart, { passive: true });
-  canvas.addEventListener("touchmove", onCanvasTouchMove, { passive: false });
-  canvas.addEventListener("touchend", onCanvasTouchEnd, { passive: false });
-  canvas.addEventListener("touchcancel", clearSwipeState, { passive: true });
+  const swipeTarget = isEmbeddedGame ? document : canvas;
+  swipeTarget.addEventListener("touchstart", onCanvasTouchStart, { passive: true });
+  swipeTarget.addEventListener("touchmove", onCanvasTouchMove, { passive: false });
+  swipeTarget.addEventListener("touchend", onCanvasTouchEnd, { passive: false });
+  swipeTarget.addEventListener("touchcancel", clearSwipeState, { passive: true });
   canvas.addEventListener("click", () => {
     if (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER) {
       primeAudioContext();
