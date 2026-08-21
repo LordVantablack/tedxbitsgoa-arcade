@@ -10,27 +10,27 @@
   const personalBest = Math.max(0, Number.parseInt(query.get("pb") || "0", 10) || 0);
   const WIDTH = 480;
   const HEIGHT = 720;
-  const gravity = 980;
-  const flapVelocity = -340;
-  const gateWidth = 72;
+  const gravity = 1050;
+  const flapVelocity = -360;
+  const gateWidth = 78;
   // Score-tiered pace adapted from Serkan Bayraktar's MIT-licensed Canvas
   // game reference. The cap keeps later gates demanding but fair.
   const DIFFICULTY = {
     // Change this one value to make the pace rise every X cleared gates.
     scoreInterval: 5,
     maxTier: 4,
-    baseSpeed: 156,
-    speedPerTier: 13,
-    maxSpeed: 214,
-    baseGap: 226,
-    gapReductionPerTier: 8,
-    minGap: 190,
-    baseInterval: 980,
-    intervalReductionPerTier: 35,
-    minInterval: 840,
+    baseSpeed: 178,
+    speedPerTier: 17,
+    maxSpeed: 248,
+    baseGap: 208,
+    gapReductionPerTier: 10,
+    minGap: 174,
+    baseInterval: 1450,
+    intervalReductionPerTier: 55,
+    minInterval: 1230,
     labels: ["OPENING ACT", "LIGHTS UP", "FULL HOUSE", "HEADLINE SET", "ENCORE"],
   };
-  const player = { x: 124, y: HEIGHT / 2, radius: 17, velocity: 0, tilt: 0 };
+  const player = { x: 124, y: HEIGHT / 2, radius: 19, velocity: 0, tilt: 0 };
   const artwork = {
     background: loadArtwork("assets/stage-flight-bdome-background.png"),
     lowerColumn: loadArtwork("assets/stage-flight-lower-column.png"),
