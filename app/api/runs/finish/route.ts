@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     const runId = typeof body.runId === "string" ? body.runId : "";
     const gameId = typeof body.gameId === "string" ? body.gameId : "";
     const gameVersion = typeof body.gameVersion === "string" ? body.gameVersion : "";
-    const score = body.score;
+    const score = typeof body.score === "number" ? Math.floor(body.score) : Number.NaN;
     const durationMs = body.durationMs;
     const metadata = parseJsonObject(body.metadata);
     if (!runId || !isGameId(gameId) || !gameVersion) throw new ApiError(400, "Run information is incomplete.");

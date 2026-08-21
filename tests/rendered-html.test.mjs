@@ -36,11 +36,12 @@ test("defines the TEDxBITSGoa arcade shell instead of the starter preview", asyn
 });
 
 test("lets BITS Goa players play while keeping the leaderboard 2026-only", async () => {
-  const [campaign, startRun, finishRun, leaderboardRoute, profileRoute, signin, avatarPage, landing, client, leaderboardClient, globals] = await Promise.all([
+  const [campaign, startRun, finishRun, leaderboardRoute, meRoute, profileRoute, signin, avatarPage, landing, client, leaderboardClient, globals] = await Promise.all([
     readFile(new URL("../config/campaign.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/runs/start/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/runs/finish/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/leaderboards/[gameId]/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/me/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/profile/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/signin/SignInClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/avatar/AvatarPageClient.tsx", import.meta.url), "utf8"),
@@ -63,6 +64,9 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(leaderboardRoute, /leaderboardEligible = isLeaderboardEligibleEmail\(session\.email\)/);
   assert.match(leaderboardRoute, /rank: number \| null/);
   assert.doesNotMatch(leaderboardRoute, /COALESCE\(p\.handle, p\.display_name\)/);
+  assert.match(meRoute, /FROM personal_bests WHERE google_subject = \?/);
+  assert.match(meRoute, /scores:/);
+  assert.match(client, /setViewerScores/);
   assert.match(profileRoute, /\{2,15\}/);
   assert.match(client, /maxLength=\{16\}/);
   assert.match(client, /PRIVATE PB/);

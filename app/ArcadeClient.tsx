@@ -13,6 +13,7 @@ import { SiteNav } from "./SiteNav";
 type Player = { email: string; displayName: string; handle: string | null; avatarId: string | null; avatar: AvatarConfig; leaderboardEligible: boolean } | null;
 type LeaderboardEntry = { displayName: string; score: number; achievedAt: string };
 type ViewerScore = { score: number; rank: number | null; leaderboardEligible: boolean } | null;
+type PersonalScore = { gameId: GameId; score: number; achievedAt: string };
 type StartedRun = { runId: string; gameId: GameId; gameVersion: string; seed: string; startedAt: number };
 type GameMessage = {
   type: "tedx:game-over";
@@ -52,8 +53,18 @@ export function ArcadeClient() {
   useEffect(() => {
     void fetch("/api/me", { cache: "no-store" })
       .then((response) => response.json())
-      .then((data: { player: Player }) => {
+      .then((data: { player: Player; scores?: PersonalScore[] }) => {
         setPlayer(data.player);
+        if (data.player && Array.isArray(data.scores)) {
+          setViewerScores((current) => ({
+            ...current,
+            ...Object.fromEntries(
+              data.scores
+                .filter((score) => score.gameId in GAMES)
+                .map((score) => [score.gameId, { score: score.score, rank: null, leaderboardEligible: data.player?.leaderboardEligible ?? false }]),
+            ),
+          }));
+        }
         if (data.player) {
           setHandle(data.player.handle ?? "");
           setAvatar(data.player.avatar);
@@ -103,6 +114,16 @@ export function ArcadeClient() {
           : `New personal best: ${data.personalBest?.score ?? message.score}. It’s saved privately to your account.`
         : `Score saved. Your PB stays at ${data.personalBest?.score ?? "its current mark"}.`,
     );
+    if (data.personalBest && Number.isSafeInteger(data.personalBest.score)) {
+      setViewerScores((current) => ({
+        ...current,
+        [activeRun.gameId]: {
+          score: data.personalBest?.score ?? Math.floor(message.score),
+          rank: current[activeRun.gameId]?.rank ?? null,
+          leaderboardEligible: player?.leaderboardEligible ?? false,
+        },
+      }));
+    }
     setActiveRun(null);
     setActiveGame(null);
     void loadLeaderboards();

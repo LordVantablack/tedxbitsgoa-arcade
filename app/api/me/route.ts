@@ -2,6 +2,7 @@ import { getSessionUser } from "../../../lib/auth";
 import { getRuntimeEnv } from "../../../lib/runtime";
 import { normalizeAvatar } from "../../../config/avatar";
 import { isLeaderboardEligibleEmail } from "../../../config/campaign";
+import { isGameId } from "../../../config/games";
 
 export const runtime = "edge";
 
@@ -13,6 +14,11 @@ export async function GET() {
     .prepare("SELECT handle, avatar_id AS avatarId, avatar_config AS avatarConfig FROM players WHERE google_subject = ?")
     .bind(session.googleSubject)
     .first<{ handle: string | null; avatarId: string | null; avatarConfig: string | null }>();
+  const { results: scores } = await getRuntimeEnv().DB
+    .prepare("SELECT game_id AS gameId, score, achieved_at AS achievedAt FROM personal_bests WHERE google_subject = ?")
+    .bind(session.googleSubject)
+    .all<{ gameId: string; score: number; achievedAt: string }>();
+
   return Response.json({
     player: {
       email: session.email,
@@ -22,6 +28,7 @@ export async function GET() {
       avatar: parseAvatar(player?.avatarConfig),
       leaderboardEligible: isLeaderboardEligibleEmail(session.email),
     },
+    scores: (scores ?? []).filter((score) => isGameId(score.gameId)),
   });
 }
 
