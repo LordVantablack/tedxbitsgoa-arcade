@@ -933,53 +933,95 @@ body {
 .title-main { text-shadow: 3px 3px 0 #7f1711; }
 .game-actions .utility-action { display: none !important; }
 
-/* Phone-first embedded layout: maximize maze width and keep primary controls
-   reachable without changing the game canvas or its logical tile grid. */
-@media (max-width: 640px) and (hover: none), (max-width: 640px) and (pointer: coarse) {
+/* Phone-first embedded layout: maximize maze width and make the canvas the
+   control surface. The arcade shell supplies the outer close button. */
+@media (max-width: 900px) and (hover: none), (max-width: 900px) and (pointer: coarse) {
   body.embedded-game {
     min-height: 100dvh;
-    padding: 4px;
-    gap: 5px;
+    padding: 0;
+    gap: 0;
+    overflow: hidden;
   }
 
   body.embedded-game .site-header,
   body.embedded-game .game-shell,
-  body.embedded-game .canvas-shell,
-  body.embedded-game .settings-panel {
+  body.embedded-game .canvas-shell {
     width: 100%;
+  }
+
+  body.embedded-game .site-header {
+    position: fixed;
+    top: max(4px, env(safe-area-inset-top));
+    left: max(4px, env(safe-area-inset-left));
+    right: max(4px, env(safe-area-inset-right));
+    z-index: 3;
+    pointer-events: none;
   }
 
   body.embedded-game .header-pill,
   body.embedded-game .site-footer,
+  body.embedded-game .settings-panel,
+  body.embedded-game .touch-controls,
+  body.embedded-game #virtual-stick,
   body.embedded-game #replay-last,
   body.embedded-game #daily-challenge {
-    display: none;
+    display: none !important;
   }
 
   body.embedded-game .game-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(100%, 260px);
-    margin: 0 auto;
-    gap: 5px;
+    display: flex;
+    width: auto;
+    margin: 0;
+    gap: 4px;
+    justify-content: flex-end;
+    pointer-events: auto;
   }
 
   body.embedded-game .action-btn {
     min-width: 0;
-    min-height: 40px;
-    padding: 7px 4px;
-    font-size: 10px;
+    min-height: 28px;
+    padding: 5px 7px;
+    font-size: 8px;
+    background: rgba(7, 26, 51, 0.78);
+    backdrop-filter: blur(5px);
   }
 
-  body.embedded-game .game-shell { gap: 5px; }
-  body.embedded-game .canvas-shell { padding: 4px; }
-  body.embedded-game #canvas { border-width: 1px; }
-
-  body.embedded-game .touch-controls {
-    --control-size: 72px;
-    gap: 8px;
-    margin-top: 10px;
+  body.embedded-game .game-shell {
+    min-height: 100dvh;
+    gap: 0;
   }
 
-  body.embedded-game .settings-panel summary { padding: 9px 11px; }
+  body.embedded-game .canvas-shell {
+    min-height: 100dvh;
+    padding: 2px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    justify-content: center;
+    background: #050505;
+  }
+
+  body.embedded-game #canvas {
+    border-width: 1px;
+  }
+}
+
+@media (max-width: 900px) and (pointer: coarse) and (orientation: portrait) {
+  body.embedded-game::before {
+    content: "ROTATE PHONE SIDEWAYS FOR A BIGGER MAZE";
+    position: fixed;
+    left: 50%;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 4;
+    transform: translateX(-50%);
+    padding: 5px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(5, 5, 5, 0.72);
+    color: #f1eee8;
+    font-family: "Raster Forge", "Courier New", monospace;
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    pointer-events: none;
+  }
 }

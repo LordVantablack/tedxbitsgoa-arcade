@@ -1796,7 +1796,9 @@ function resizeCanvasToFitViewport() {
   const availH = Math.max(220, window.innerHeight - measureNonCanvasUiHeight());
   const coarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
   const arcadeScaleActive = arcadeViewEnabled;
-  const maxScale = arcadeScaleActive ? 1.65 : (coarsePointer ? 1 : 1.12);
+  const maxScale = arcadeScaleActive
+    ? (isEmbeddedGame ? 2.8 : 1.65)
+    : (coarsePointer ? (isEmbeddedGame ? 2.2 : 1) : 1.12);
 
   renderScale = Math.min(availW / logicalW, availH / logicalH, maxScale);
 
@@ -3378,7 +3380,7 @@ function clearSwipeState() {
 }
 
 function onCanvasTouchStart(event) {
-  if (settings.mobileInputMode !== "buttons" || settings.oneHandedMode) return;
+  if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
   if (!event.touches || event.touches.length === 0) return;
   primeAudioContext();
   swipeStartX = event.touches[0].clientX;
@@ -3386,13 +3388,13 @@ function onCanvasTouchStart(event) {
 }
 
 function onCanvasTouchMove(event) {
-  if (settings.mobileInputMode !== "buttons" || settings.oneHandedMode) return;
+  if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
   if (swipeStartX === null || swipeStartY === null) return;
   event.preventDefault();
 }
 
 function onCanvasTouchEnd(event) {
-  if (settings.mobileInputMode !== "buttons" || settings.oneHandedMode) return;
+  if (!isEmbeddedGame && (settings.mobileInputMode !== "buttons" || settings.oneHandedMode)) return;
   if (swipeStartX === null || swipeStartY === null) return;
   if (!event.changedTouches || event.changedTouches.length === 0) {
     clearSwipeState();
@@ -3441,12 +3443,12 @@ function updateMobileInputPresentation() {
   updateMobileControlSizing();
 
   if (touchControlsRoot) {
-    const showButtons = coarsePointer && !useStick;
+    const showButtons = coarsePointer && !useStick && !isEmbeddedGame;
     touchControlsRoot.classList.toggle("hidden", !showButtons);
   }
 
   if (virtualStickRoot) {
-    const showStick = coarsePointer && useStick;
+    const showStick = coarsePointer && useStick && !isEmbeddedGame;
     virtualStickRoot.classList.toggle("hidden", !showStick);
   }
 }

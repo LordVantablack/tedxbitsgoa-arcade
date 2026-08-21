@@ -223,9 +223,9 @@ export function ArcadeClient() {
       </section>
 
       {activeGame ? (
-        <div className="game-modal" role="dialog" aria-modal="true" aria-label={`${activeGame.title} game`}>
+        <div className={`game-modal ${activeGame.id === "maze-chase" ? "game-modal--maze" : ""}`} role="dialog" aria-modal="true" aria-label={`${activeGame.title} game`}>
           <div className="game-modal-bar">
-            <div><strong>{activeGame.title}</strong><span>Scoreable run active</span></div>
+            <div><strong>{activeGame.title}</strong><span>Scoreable run active</span>{activeGame.id === "maze-chase" ? <em className="maze-rotate-hint">Rotate phone sideways for full-size maze</em> : null}</div>
             <button className="text-button" onClick={() => setActiveGame(null)}>Close cabinet</button>
           </div>
           <iframe
