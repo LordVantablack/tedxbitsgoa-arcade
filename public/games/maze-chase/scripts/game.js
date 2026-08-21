@@ -3423,6 +3423,11 @@ function onCanvasTouchEnd(event) {
   clearSwipeState();
 
   if (Math.abs(dx) < SWIPE_THRESHOLD_PX && Math.abs(dy) < SWIPE_THRESHOLD_PX) {
+    if (isEmbeddedGame && (phase === GAME_PHASE_START || phase === GAME_PHASE_GAMEOVER)) {
+      event.preventDefault();
+      primeAudioContext();
+      handleAction("start");
+    }
     return;
   }
 
