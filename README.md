@@ -55,6 +55,69 @@ complete.
   [source notices](docs/GAME-SOURCES-AND-LICENSES.md).
 - Deploy with the generated D1 migrations.
 
+## After the campaign: loose ends and winners
+
+When the arcade is done, use the production D1 database as the source of truth.
+The public winners should be the highest personal bests from eligible
+`f2026xxxx@goa.bits-pilani.ac.in` accounts only. The leaderboard display name is
+the player `handle`, not the Google name or email.
+
+To find the top 10 winners for every game, run this against the production D1
+database, replacing `tedxbitsgoa-arcade-db` if the Cloudflare database is named
+differently:
+
+```bash
+npx wrangler d1 execute tedxbitsgoa-arcade-db --remote --command "
+SELECT
+  pb.game_id,
+  p.handle AS username,
+  pb.score,
+  pb.achieved_at,
+  pb.run_ticket_id
+FROM personal_bests pb
+JOIN players p ON p.google_subject = pb.google_subject
+WHERE lower(p.email) GLOB 'f2026[0-9][0-9][0-9][0-9]@goa.bits-pilani.ac.in'
+  AND p.handle IS NOT NULL
+ORDER BY pb.game_id ASC, pb.score DESC, pb.achieved_at ASC;
+"
+```
+
+For final winner selection, take the first rows per `game_id` after sorting by:
+
+1. higher `score`;
+2. earlier `achieved_at` if scores are tied.
+
+If a score needs review, inspect the run evidence for that `run_ticket_id`:
+
+```bash
+npx wrangler d1 execute tedxbitsgoa-arcade-db --remote --command "
+SELECT
+  rt.id,
+  rt.game_id,
+  rt.game_version,
+  rt.seed,
+  rt.issued_at,
+  rt.submitted_at,
+  rt.status,
+  re.evidence_json
+FROM run_tickets rt
+LEFT JOIN run_evidence re ON re.run_ticket_id = rt.id
+WHERE rt.id = 'PASTE_RUN_TICKET_ID_HERE';
+"
+```
+
+Suggested closeout checklist:
+
+- Export or screenshot the final winners per game.
+- Keep the final deployed commit hash with the winner record.
+- Do not publish student emails; publish usernames only.
+- If the arcade is over, disable new play by turning off the campaign/deployment
+  or removing the public route.
+- After the 8–15 day event window, review Cloudflare billing/auto-pay and shut
+  down anything no longer needed.
+- Keep the D1 database backup/export until winners are announced and disputes
+  are resolved.
+
 ## Documentation map
 
 - [Architecture](docs/ARCHITECTURE.md)
