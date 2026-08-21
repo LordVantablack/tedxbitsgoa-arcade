@@ -36,6 +36,7 @@ export function ArcadeClient() {
   const [avatar, setAvatar] = useState<AvatarConfig>(DEFAULT_AVATAR);
   const [profileError, setProfileError] = useState("");
   const gameFrameRef = useRef<HTMLIFrameElement>(null);
+  const cabinetCarouselRef = useRef<HTMLElement>(null);
 
   const loadLeaderboards = useCallback(async () => {
     const loaded = await Promise.all(
@@ -183,6 +184,14 @@ export function ArcadeClient() {
     void launchGame(game);
   }
 
+  function moveCabinetCarousel(direction: -1 | 1) {
+    const carousel = cabinetCarouselRef.current;
+    if (!carousel) return;
+    const card = carousel.querySelector<HTMLElement>(".arcade-machine");
+    const step = card ? card.getBoundingClientRect().width + 18 : carousel.clientWidth * 0.82;
+    carousel.scrollBy({ left: direction * step, behavior: "smooth" });
+  }
+
   return (
     <main className="arcade-shell experience">
       <div className="ambient" aria-hidden="true">{THEME.backgroundVideoSrc ? <video autoPlay muted loop playsInline poster="/og-arcade.png"><source src={THEME.backgroundVideoSrc} /></video> : null}</div>
@@ -197,28 +206,32 @@ export function ArcadeClient() {
         <p className="status" role="status">{notice}</p>
       </section>
 
-      <section className="cabinet-grid" aria-label="Games">
-        {Object.values(GAMES).map((game, index) => (
-          <article className="arcade-machine" key={game.id}>
-            <div className="arcade-machine__visual">
-              <button className="arcade-machine__screen" type="button" onClick={() => requestScoreRun(game)} aria-label={`${gameActionLabel(player)} ${game.title}`}>
-                <img src={game.previewImage} alt="" />
-                <span className="arcade-machine__screen-shade" aria-hidden="true" />
-                <span className="arcade-machine__screen-logo" aria-hidden="true">{cabinetWordmark(game.id)}</span>
-                <span className="arcade-machine__screen-prompt" aria-hidden="true">{gameActionLabel(player)}</span>
-              </button>
-              <span className="arcade-machine__marquee" aria-hidden="true">{cabinetWordmark(game.id)}</span>
-              <img className="arcade-machine__shell" src={cabinetShell(game.id)} alt="" aria-hidden="true" />
-            </div>
-            <div className="arcade-machine__actions">
-              <button type="button" onClick={() => requestScoreRun(game)}>{gameActionLabel(player)}</button>
-            </div>
-            <p className="arcade-machine__description">{game.shortDescription}</p>
-            <p className="arcade-machine__controls">{game.controlHint}</p>
-            <p className="arcade-machine__rank" aria-live="polite">0{index + 1} · {leaderboardPlaque(player, viewerScores[game.id] ?? null)}</p>
-          </article>
-        ))}
-      </section>
+      <div className="cabinet-carousel" aria-label="Swipe between games">
+        <button className="cabinet-carousel__arrow cabinet-carousel__arrow--prev" type="button" onClick={() => moveCabinetCarousel(-1)} aria-label="Previous game">‹</button>
+        <section className="cabinet-grid" aria-label="Games" ref={cabinetCarouselRef}>
+          {Object.values(GAMES).map((game, index) => (
+            <article className="arcade-machine" key={game.id}>
+              <div className="arcade-machine__visual">
+                <button className="arcade-machine__screen" type="button" onClick={() => requestScoreRun(game)} aria-label={`${gameActionLabel(player)} ${game.title}`}>
+                  <img src={game.previewImage} alt="" />
+                  <span className="arcade-machine__screen-shade" aria-hidden="true" />
+                  <span className="arcade-machine__screen-logo" aria-hidden="true">{cabinetWordmark(game.id)}</span>
+                  <span className="arcade-machine__screen-prompt" aria-hidden="true">{gameActionLabel(player)}</span>
+                </button>
+                <span className="arcade-machine__marquee" aria-hidden="true">{cabinetWordmark(game.id)}</span>
+                <img className="arcade-machine__shell" src={cabinetShell(game.id)} alt="" aria-hidden="true" />
+              </div>
+              <div className="arcade-machine__actions">
+                <button type="button" onClick={() => requestScoreRun(game)}>{gameActionLabel(player)}</button>
+              </div>
+              <p className="arcade-machine__description">{game.shortDescription}</p>
+              <p className="arcade-machine__controls">{game.controlHint}</p>
+              <p className="arcade-machine__rank" aria-live="polite">0{index + 1} · {leaderboardPlaque(player, viewerScores[game.id] ?? null)}</p>
+            </article>
+          ))}
+        </section>
+        <button className="cabinet-carousel__arrow cabinet-carousel__arrow--next" type="button" onClick={() => moveCabinetCarousel(1)} aria-label="Next game">›</button>
+      </div>
 
       <section className="arcade-group-actions" aria-label="Arcade account and leaderboard actions">
         {player ? <div className="account-chip" aria-label={`Welcome, ${player.handle ?? player.displayName}`}><span>WELCOME</span><b>{player.handle ?? player.displayName}</b></div> : <Link className="control-tile is-selected" href="/signin?returnTo=/avatar"><i aria-hidden="true">▶</i><b>SIGN IN WITH BITS GOA</b></Link>}
