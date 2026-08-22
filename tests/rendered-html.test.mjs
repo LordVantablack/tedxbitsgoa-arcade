@@ -28,6 +28,8 @@ test("defines the TEDxBITSGoa arcade shell instead of the starter preview", asyn
   assert.match(client, /SIGN IN TO PLAY/);
   assert.match(leaderboard, /YOUR VERIFIED PB/);
   assert.doesNotMatch(client, /PLAY DEMO/);
+  assert.doesNotMatch(client, /run=.*preview/);
+  assert.match(client, /activeGame && activeRun/);
   assert.match(mazeManifest, /Coco Chase/);
   assert.doesNotMatch(mazeManifest, /PacMan/);
   assert.match(appManifest, /TEDxBITSGoa Arcade/);
@@ -64,8 +66,9 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(leaderboardRoute, /leaderboardEligible = isLeaderboardEligibleEmail\(session\.email\)/);
   assert.match(leaderboardRoute, /rank: number \| null/);
   assert.doesNotMatch(leaderboardRoute, /COALESCE\(p\.handle, p\.display_name\)/);
-  assert.match(finishRun, /const improved = !previousBest \|\| score > previousBest\.score/);
-  assert.match(finishRun, /UPDATE personal_bests[\s\S]*WHERE game_id = \? AND google_subject = \? AND score < \?/);
+  assert.match(finishRun, /UPDATE run_tickets SET status = 'submitted'[\s\S]*AND status = 'issued'/);
+  assert.match(finishRun, /UPDATE personal_bests[\s\S]*AND EXISTS \([\s\S]*status = 'submitted'[\s\S]*submitted_at = \?/);
+  assert.match(finishRun, /const improved = \(result\[1\]\.meta\.changes \?\? 0\) === 1/);
   assert.doesNotMatch(finishRun, /ON CONFLICT\(game_id, google_subject\)/);
   assert.match(finishRun, /ORDER BY score DESC, achieved_at ASC/);
   assert.match(meRoute, /MAX\(score\) AS score/);
@@ -81,6 +84,11 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.match(signin, /Any BITS Goa account can play/);
   assert.match(client + leaderboardClient, /welcome-chip/);
   assert.match(globals, /leaderboard-page__grid[\s\S]*grid-template-columns:1fr/);
+  const stageStack = await readFile(new URL("../public/games/stage-stack/index.html", import.meta.url), "utf8");
+  assert.match(stageStack, /scoreable=Boolean\(query\.get\('run'\)&&query\.get\('run'\)!=='preview'\)/);
+  assert.match(stageStack, /scoreable&&tedxRunStartedAt/);
+  assert.match(stageStack, /type:'tedx:restart-game',gameId:'stage-stack'/);
+  assert.doesNotMatch(finishRun, /validateDeadlineDash|validateStageStack|validateMazeChase/);
 });
 
 test("keeps the scoreable game sources and database migration in the shipped project", async () => {

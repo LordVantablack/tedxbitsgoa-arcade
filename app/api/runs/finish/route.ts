@@ -1,5 +1,6 @@
 import { isGameId } from "../../../../config/games";
 import { requireSessionUser } from "../../../../lib/auth";
+import { createOpaqueId } from "../../../../lib/ids";
 import { ApiError, jsonError, parseJsonObject, requireSameOrigin } from "../../../../lib/http";
 import { getRuntimeEnv } from "../../../../lib/runtime";
 import { validateRunPayload } from "../../../../lib/score-validation";
@@ -24,7 +25,6 @@ export async function POST(request: Request) {
     const gameId = typeof body.gameId === "string" ? body.gameId : "";
     const gameVersion = typeof body.gameVersion === "string" ? body.gameVersion : "";
     const score = typeof body.score === "number" ? Math.floor(body.score) : Number.NaN;
-    const durationMs = body.durationMs;
     const metadata = parseJsonObject(body.metadata);
     if (!runId || !isGameId(gameId) || !gameVersion) throw new ApiError(400, "Run information is incomplete.");
 
@@ -45,11 +45,11 @@ export async function POST(request: Request) {
 
     const evidenceJson = validateRunPayload(gameId, {
       score: typeof score === "number" ? score : Number.NaN,
-      durationMs: typeof durationMs === "number" ? durationMs : Number.NaN,
       metadata,
       evidence: body.evidence,
     });
     const now = new Date().toISOString();
+    const claimStamp = `${now}:${createOpaqueId(12)}`;
     const previousBest = await db
       .prepare(
         `SELECT score, achieved_at AS achievedAt
@@ -60,34 +60,38 @@ export async function POST(request: Request) {
       )
       .bind(gameId, user.googleSubject)
       .first<{ score: number; achievedAt: string }>();
-    const improved = !previousBest || score > previousBest.score;
-
-    const result = await db.batch(
-      improved
-        ? [
-            db.prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'").bind(now, runId),
-            db
-              .prepare(
-                `UPDATE personal_bests
-                 SET score = ?, achieved_at = ?, run_ticket_id = ?, game_version = ?
-                 WHERE game_id = ? AND google_subject = ? AND score < ?`,
-              )
-              .bind(score, now, runId, gameVersion, gameId, user.googleSubject, score),
-            db
-              .prepare(
-                `INSERT INTO personal_bests (game_id, google_subject, score, achieved_at, run_ticket_id, game_version)
-                 SELECT ?, ?, ?, ?, ?, ?
-                 WHERE NOT EXISTS (
-                   SELECT 1 FROM personal_bests WHERE game_id = ? AND google_subject = ?
-                 )`,
-              )
-              .bind(gameId, user.googleSubject, score, now, runId, gameVersion, gameId, user.googleSubject),
-          ]
-        : [
-            db.prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'").bind(now, runId),
-          ],
-    );
+    const result = await db.batch([
+      db
+        .prepare("UPDATE run_tickets SET status = 'submitted', submitted_at = ? WHERE id = ? AND status = 'issued'")
+        .bind(claimStamp, runId),
+      db
+        .prepare(
+          `UPDATE personal_bests
+           SET score = ?, achieved_at = ?, run_ticket_id = ?, game_version = ?
+           WHERE game_id = ? AND google_subject = ? AND score < ?
+             AND EXISTS (
+               SELECT 1 FROM run_tickets
+               WHERE id = ? AND status = 'submitted' AND submitted_at = ?
+             )`,
+        )
+        .bind(score, now, runId, gameVersion, gameId, user.googleSubject, score, runId, claimStamp),
+      db
+        .prepare(
+          `INSERT INTO personal_bests (game_id, google_subject, score, achieved_at, run_ticket_id, game_version)
+           SELECT ?, ?, ?, ?, ?, ?
+           WHERE EXISTS (
+             SELECT 1 FROM run_tickets
+             WHERE id = ? AND status = 'submitted' AND submitted_at = ?
+           )
+           AND NOT EXISTS (
+             SELECT 1 FROM personal_bests WHERE game_id = ? AND google_subject = ?
+           )`,
+        )
+        .bind(gameId, user.googleSubject, score, now, runId, gameVersion, runId, claimStamp, gameId, user.googleSubject),
+    ]);
     if ((result[0].meta.changes ?? 0) !== 1) throw new ApiError(409, "This run has already been submitted.");
+
+    const improved = (result[1].meta.changes ?? 0) === 1 || (result[2].meta.changes ?? 0) === 1;
 
     if (improved && evidenceJson) {
       await db

@@ -275,7 +275,7 @@ export function ArcadeClient() {
         {CAMPAIGN.registrationUrl ? <a href={CAMPAIGN.registrationUrl} target="_blank" rel="noreferrer">Open the induction form ↗</a> : null}
       </section>
 
-      {activeGame ? (
+      {activeGame && activeRun ? (
         <div className={`game-modal ${activeGame.id === "maze-chase" ? "game-modal--maze" : ""}`} role="dialog" aria-modal="true" aria-label={`${activeGame.title} game`}>
           <div className="game-modal-bar">
             <div><strong>{activeGame.title}</strong><span>Start game, then finish the run to save your PB</span></div>
@@ -284,7 +284,7 @@ export function ArcadeClient() {
           <iframe
             ref={gameFrameRef}
             title={activeGame.title}
-            src={`${activeGame.embedPath}&run=${encodeURIComponent(activeRun?.runId ?? "preview")}&seed=${encodeURIComponent(activeRun?.seed ?? "")}&pb=${encodeURIComponent(String(viewerScores[activeGame.id]?.score ?? 0))}`}
+            src={`${activeGame.embedPath}&run=${encodeURIComponent(activeRun.runId)}&seed=${encodeURIComponent(activeRun.seed)}&pb=${encodeURIComponent(String(viewerScores[activeGame.id]?.score ?? 0))}`}
             className="game-frame"
             tabIndex={0}
             onLoad={() => gameFrameRef.current?.focus()}

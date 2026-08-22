@@ -31,8 +31,8 @@ Student browser
 4. The student plays inside the matching game cabinet.
 5. On game over, the arcade shell sends score, duration, compact metadata, and
    small evidence to `POST /api/runs/finish`.
-6. The Worker checks ownership, expiry, one-time use, game version, and simple
-   game-specific plausibility rules. It then updates the player's PB only if higher.
+6. The Worker checks ownership, expiry, one-time use, game version, and the
+   basic score/run shape. It then updates the player's PB only if higher.
 7. A public leaderboard reads only eligible 2026-batch PB rows and saved
    usernames, never a browser cache, email address, or Google display name.
 

@@ -22,13 +22,14 @@ Browser games cannot prove that a human—not a script—pressed every key. This
 deterrence and auditability, not an anti-cheat arms race. The final top 10 is
 therefore **provisional** and should be reviewed before fast-tracking anyone.
 
-## Checks by game
+## Score acceptance
 
-| Game | Server checks | Evidence retained with a PB |
-| --- | --- | --- |
-| Stage Flight | Gate score and flap count are plausible for duration | Flap count and cleared gates |
-| Stage Stack | Recomputes score from success/perfect-placement sequence; server accepts up to three misses, while the arcade presentation ends a run on the first miss | Placement sequence and misses |
-| Maze Chase | Score, level, input volume, and duration are within conservative bounds | Seeded input replay when available |
+The server deliberately does not apply game-specific anti-cheat heuristics. Real
+browser timing, input, and device differences made those checks too brittle for
+an event leaderboard. A finish still requires a matching, unexpired,
+server-issued one-time ticket, a safe integer score, and bounded optional
+evidence. Duration is retained only as client telemetry and is not used to
+reject a score. The public board remains provisional for organiser review.
 
 ## Organiser policy
 
