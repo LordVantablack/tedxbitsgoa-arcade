@@ -8,7 +8,7 @@ export const runtime = "edge";
 
 const RUN_TICKET_TTL_MS = 2 * 60 * 60 * 1_000;
 const START_RATE_WINDOW_MS = 60 * 60 * 1_000;
-const MAX_RUNS_PER_HOUR = 60;
+const MAX_OPEN_RUNS_PER_HOUR = 60;
 
 export async function POST(request: Request) {
   try {
@@ -26,11 +26,11 @@ export async function POST(request: Request) {
     const db = getRuntimeEnv().DB;
     const startedSince = new Date(Date.now() - START_RATE_WINDOW_MS).toISOString();
     const rate = await db
-      .prepare("SELECT COUNT(*) AS count FROM run_tickets WHERE google_subject = ? AND issued_at >= ?")
+      .prepare("SELECT COUNT(*) AS count FROM run_tickets WHERE google_subject = ? AND status = 'issued' AND issued_at >= ?")
       .bind(user.googleSubject, startedSince)
       .first<{ count: number }>();
-    if ((rate?.count ?? 0) >= MAX_RUNS_PER_HOUR) {
-      throw new ApiError(429, "Take a breather—please try another run in a little while.");
+    if ((rate?.count ?? 0) >= MAX_OPEN_RUNS_PER_HOUR) {
+      throw new ApiError(429, "Too many unfinished runs are open. Finish one before starting another.");
     }
 
     const now = new Date();

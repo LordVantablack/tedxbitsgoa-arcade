@@ -59,6 +59,7 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
   assert.doesNotMatch(startRun, /isCampaignLive/);
   assert.doesNotMatch(startRun, /campaign is not live/);
   assert.doesNotMatch(startRun, /isLeaderboardEligibleEmail\(user\.email\)/);
+  assert.match(startRun, /status = 'issued' AND issued_at >= \?/);
   assert.doesNotMatch(finishRun, /isLeaderboardEligibleEmail\(user\.email\)/);
   assert.match(leaderboardRoute, /SELECT p\.handle AS displayName/);
   assert.match(leaderboardRoute, /LOWER\(p\.email\) GLOB/);
