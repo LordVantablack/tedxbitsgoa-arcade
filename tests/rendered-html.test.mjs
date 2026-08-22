@@ -95,6 +95,9 @@ test("lets BITS Goa players play while keeping the leaderboard 2026-only", async
 test("keeps the scoreable game sources and database migration in the shipped project", async () => {
   const requiredPaths = [
     "public/games/deadline-dash/index.html",
+    "public/games/deadline-dash/assets/stage-flight-column-posters-a.png",
+    "public/games/deadline-dash/assets/stage-flight-column-posters-b.png",
+    "public/games/deadline-dash/assets/stage-flight-upper-rect-light.png",
     "public/games/stage-stack/index.html",
     "public/games/maze-chase/index.html",
     "drizzle/0000_opposite_doctor_octopus.sql",
@@ -114,4 +117,12 @@ test("keeps the scoreable game sources and database migration in the shipped pro
   assert.match(gameConfig, /stage-stack/);
   assert.match(gameConfig, /maze-chase/);
   assert.match(auth, /goa\.bits-pilani\.ac\.in/);
+
+  const stageFlight = await readFile(new URL("../public/games/deadline-dash/stage-flight.js", import.meta.url), "utf8");
+  assert.match(stageFlight, /player\.x \+ player\.radius > gate\.x[\s\S]*gate\.x \+ gateWidth/);
+  assert.match(stageFlight, /const UPPER_COLUMN_WIDTH = Math\.round\(gateWidth \* 0\.75\)/);
+  assert.match(stageFlight, /const upperX = gate\.x \+ \(gateWidth - UPPER_COLUMN_WIDTH\) \/ 2/);
+  assert.match(stageFlight, /UPPER_COLUMN_CROP\.width, UPPER_COLUMN_CROP\.height, upperX, 0, UPPER_COLUMN_WIDTH/);
+  assert.match(stageFlight, /LOWER_COLUMN_CROP\.width, LOWER_COLUMN_CROP\.height, gate\.x, bottomY, gateWidth/);
+  assert.match(stageFlight, /columnVariant: Math\.floor\(random\(\) \* artwork\.lowerColumns\.length\)/);
 });

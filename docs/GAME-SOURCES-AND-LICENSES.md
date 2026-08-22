@@ -36,6 +36,13 @@ demo. Keep the required source notice with any substantial copied code.
 | `public/games/stage-stack/assets/tedx-bits-building.png` and derived block sprites | Supplied by the TEDxBITSGoa organiser on 2026-08-20; background removed locally | Campus-building art supplied for Stage Stack blocks. |
 | `public/games/stage-stack/assets/tedx-crane.png` and derived `hook.png` | Created with OpenAI image generation for TEDxBITSGoa | Original pixel crane; no third-party crane artwork is shipped. |
 
+## Sober Parhawk game artwork
+
+| Asset | Source / licence | Notes |
+| --- | --- | --- |
+| `public/games/deadline-dash/assets/stage-flight-column-posters-a.png` and `stage-flight-column-posters-b.png` | Created with OpenAI image generation for TEDxBITSGoa using organiser-supplied portico-column reference photography | Original rectangular pixel column textures with abstract, unreadable poster blocks; no logos or third-party poster artwork. |
+| `public/games/deadline-dash/assets/stage-flight-upper-rect-light.png` | Created with OpenAI image generation for TEDxBITSGoa using the existing lamp treatment and organiser-supplied portico-column reference photography | Original rectangular overhead light/column texture; the game crops its rectangular body and uses the same rectangle for rendering and collision. |
+
 ## Before public launch
 
 - Keep the shipped `THIRD_PARTY_NOTICES.md` file with the applicable BSD/MIT notices.

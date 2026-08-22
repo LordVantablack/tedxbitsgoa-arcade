@@ -10,9 +10,12 @@
   const personalBest = Math.max(0, Number.parseInt(query.get("pb") || "0", 10) || 0);
   const WIDTH = 480;
   const HEIGHT = 720;
+  const LOWER_COLUMN_CROP = { x: 319, y: 42, width: 437, height: 1382 };
+  const UPPER_COLUMN_CROP = { x: 440, y: 60, width: 196, height: 1344 };
   const gravity = 1050;
   const flapVelocity = -360;
   const gateWidth = 78;
+  const UPPER_COLUMN_WIDTH = Math.round(gateWidth * 0.75);
   // Score-tiered pace adapted from Serkan Bayraktar's MIT-licensed Canvas
   // game reference. The cap keeps later gates demanding but fair.
   const DIFFICULTY = {
@@ -33,8 +36,11 @@
   const player = { x: 124, y: HEIGHT / 2, radius: 19, velocity: 0, tilt: 0 };
   const artwork = {
     background: loadArtwork("assets/stage-flight-bdome-background.png"),
-    lowerColumn: loadArtwork("assets/stage-flight-lower-column.png"),
-    upperLantern: loadArtwork("assets/stage-flight-upper-lantern.png"),
+    lowerColumns: [
+      loadArtwork("assets/stage-flight-column-posters-a.png"),
+      loadArtwork("assets/stage-flight-column-posters-b.png"),
+    ],
+    upperColumn: loadArtwork("assets/stage-flight-upper-rect-light.png"),
     // Pixel cutout based on the supplied photo. It preserves the real pose,
     // face, glasses, hair, and hand rather than substituting a generic avatar.
     parhawk: loadArtwork("assets/parhawk-cutout-pixel-v2.png"),
@@ -122,7 +128,7 @@
     const minTop = 112;
     const maxTop = HEIGHT - difficulty.gap - 142;
     const topHeight = minTop + Math.floor(random() * (maxTop - minTop));
-    gates.push({ x: WIDTH + 40, topHeight, gap: difficulty.gap, counted: false });
+    gates.push({ x: WIDTH + 40, topHeight, gap: difficulty.gap, columnVariant: Math.floor(random() * artwork.lowerColumns.length), counted: false });
   }
 
   function difficultyFor(currentScore) {
@@ -247,11 +253,12 @@
 
   function drawGate(gate) {
     const bottomY = gate.topHeight + gate.gap;
-    if (artwork.upperLantern.complete && artwork.lowerColumn.complete && artwork.upperLantern.naturalWidth && artwork.lowerColumn.naturalWidth) {
-      const artWidth = 142;
+    const lowerColumn = artwork.lowerColumns[gate.columnVariant] || artwork.lowerColumns[0];
+    if (artwork.upperColumn.complete && lowerColumn.complete && artwork.upperColumn.naturalWidth && lowerColumn.naturalWidth) {
+      const upperX = gate.x + (gateWidth - UPPER_COLUMN_WIDTH) / 2;
       context.imageSmoothingEnabled = false;
-      context.drawImage(artwork.upperLantern, gate.x - (artWidth - gateWidth) / 2, 0, artWidth, gate.topHeight);
-      context.drawImage(artwork.lowerColumn, gate.x - (artWidth - gateWidth) / 2, bottomY, artWidth, HEIGHT - bottomY);
+      context.drawImage(artwork.upperColumn, UPPER_COLUMN_CROP.x, UPPER_COLUMN_CROP.y, UPPER_COLUMN_CROP.width, UPPER_COLUMN_CROP.height, upperX, 0, UPPER_COLUMN_WIDTH, gate.topHeight);
+      context.drawImage(lowerColumn, LOWER_COLUMN_CROP.x, LOWER_COLUMN_CROP.y, LOWER_COLUMN_CROP.width, LOWER_COLUMN_CROP.height, gate.x, bottomY, gateWidth, HEIGHT - bottomY);
       context.imageSmoothingEnabled = true;
       return;
     }
